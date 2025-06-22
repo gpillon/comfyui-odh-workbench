@@ -7,6 +7,5 @@ mesa-libGL
 glib2
 libSM
 libXext
-libXrender-devel
 python3-devel
 wget
