@@ -42,22 +42,28 @@ RUN chmod +x /opt/app-root/scripts/*.sh && \
 USER 1001
 
 # Clone ComfyUI repository
-RUN git clone https://github.com/comfyanonymous/ComfyUI.git /opt/app-root/ComfyUI && \
-    cd /opt/app-root/ComfyUI && \
+RUN git clone https://github.com/comfyanonymous/ComfyUI.git /opt/app-root/src/ComfyUI
+USER root
+RUN mv /opt/app-root/src/ComfyUI /opt/app-root/ComfyUI && \
+    chown -R 1001:0 /opt/app-root/ComfyUI
+USER 1001
+
+# Install Python dependencies
+RUN pip install --no-cache-dir \
+pyaml==25.5.0 \
+torch==2.7.1+cpu \torchvision==0.22.1+cpu \torchaudio==2.7.1+cpu \--extra-index-url https://download.pytorch.org/whl/cpu
+RUN cd /opt/app-root/ComfyUI && \
     git checkout master && \
     pip install --upgrade pip && \
     pip install --upgrade setuptools && \
-    pip install -r requirements.txt
+    grep -v "torch\|torchaudio\|torchvision" requirements.txt > requirements_filtered.txt && \
+    pip install -r requirements_filtered.txt
 
 # set permissions for ComfyUI
 USER root
 RUN chown -R 1001:0 /opt/app-root/ComfyUI/custom_nodes
 USER 1001
 
-# Install Python dependencies
-RUN pip install --no-cache-dir \
-pyaml==25.5.0 \
-torch \torchvision \torchaudio \--extra-index-url https://download.pytorch.org/whl/cpu
 # Create extra_model_paths.yaml to point to the correct directories
 RUN echo "comfyui:" > /opt/app-root/ComfyUI/extra_model_paths.yaml && \
     echo "  base_path: /opt/app-root/src/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
@@ -76,28 +82,11 @@ RUN echo "comfyui:" > /opt/app-root/ComfyUI/extra_model_paths.yaml && \
     echo "  vae: /opt/app-root/src/models/vae/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
     echo "  gligen: /opt/app-root/src/models/gligen/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml
 
-# Create model subdirectories in the user's directory
-RUN mkdir -p /opt/app-root/src/models/checkpoints \
-    /opt/app-root/src/models/clip \
-    /opt/app-root/src/models/clip_vision \
-    /opt/app-root/src/models/configs \
-    /opt/app-root/src/models/controlnet \
-    /opt/app-root/src/models/diffusion_models \
-    /opt/app-root/src/models/unet \
-    /opt/app-root/src/models/embeddings \
-    /opt/app-root/src/models/loras \
-    /opt/app-root/src/models/upscale_models \
-    /opt/app-root/src/models/vae \
-    /opt/app-root/src/models/gligen \
-    /opt/app-root/src/input \
-    /opt/app-root/src/output
-
 # Fix permissions for OpenShift
 USER root
 RUN find /opt/app-root/ComfyUI -type d -exec chmod 775 {} \; && \
     find /opt/app-root/ComfyUI -type f -exec chmod 664 {} \; && \
-    chmod +x /opt/app-root/ComfyUI/main.py && \
-    find /opt/app-root/src/models -type d -exec chmod 775 {} \;
+    chmod +x /opt/app-root/ComfyUI/main.py
 
 USER 1001
 
@@ -109,4 +98,5 @@ VOLUME /opt/app-root/ComfyUI/custom_nodes
 EXPOSE 8080
 
 # Set entrypoint
-ENTRYPOINT ["/opt/app-root/scripts/start-comfyui.sh"] 
+ENTRYPOINT ["/opt/app-root/scripts/start-comfyui.sh", "--cpu"]
+ 

@@ -13,6 +13,7 @@ variants:
     tag: "v1.0.0"
     base_image: "registry.access.redhat.com/ubi9/python-311"
     description: "ComfyUI with CPU support only"
+    extra_flags: "--cpu"
     env:
       PYTHONUNBUFFERED: "1"
       DEBIAN_FRONTEND: "noninteractive"

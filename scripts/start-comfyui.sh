@@ -26,8 +26,7 @@ fi
 export PYTHONPATH="$USER_SITE_PACKAGES:$PYTHONPATH"
 export PYTHONUSERBASE="/opt/app-root/src/.local"
 
-# Configure pip to use user site-packages by default
-export PIP_USER=true
+# Configure pip to use custom prefix (don't use --user flag to avoid conflicts)
 export PIP_PREFIX="/opt/app-root/src/.local"
 
 # Create pip configuration directory and file
@@ -35,12 +34,12 @@ PIP_CONFIG_DIR="/opt/app-root/src/.config/pip"
 mkdir -p "$PIP_CONFIG_DIR"
 cat > "$PIP_CONFIG_DIR/pip.conf" << EOF
 [global]
-user = true
 prefix = /opt/app-root/src/.local
+target = /opt/app-root/src/.local/lib/python3.11/site-packages
 
 [install]
-user = true
 prefix = /opt/app-root/src/.local
+target = /opt/app-root/src/.local/lib/python3.11/site-packages
 EOF
 
 # Create model subdirectories in the mounted volume

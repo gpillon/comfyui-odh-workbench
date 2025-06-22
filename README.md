@@ -10,15 +10,15 @@ ComfyUI is a powerful and modular stable diffusion GUI and backend with a node-b
 
 - Dynamic image building based on YAML configuration
 - Multiple variants (NVIDIA CUDA, CPU)
-- Customizable ComfyUI packages installed at build time
-- Optimized for OpenDataHub deployment
+- Pre-installed ComfyUI Manager
+- Optimized for Openshfit AI / OpenDataHub deployment
 
 ## Available Images
 
 Images are built and published to the GitHub Container Registry:
 
-- `ghcr.io/gpillon/comfyui-nvidia:v1.0.0` - ComfyUI with NVIDIA CUDA support
-- `ghcr.io/gpillon/comfyui-cpu:v1.0.0` - ComfyUI with CPU support only
+- `ghcr.io/gpillon/comfyui-nvidia:<version>` - ComfyUI with NVIDIA CUDA support
+- `ghcr.io/gpillon/comfyui-cpu:<version>` - ComfyUI with CPU support only
 
 ## Usage
 
@@ -57,29 +57,6 @@ variants:
     base_image: "nvidia/cuda:11.8.0-runtime-ubuntu22.04"
     # additional configuration...
 
-# Custom ComfyUI packages to install at build time
-comfyui_packages:
-  - name: "ComfyUI-Manager"
-    repo: "https://github.com/ltdrdata/ComfyUI-Manager.git"
-    path: "custom_nodes/ComfyUI-Manager"
-    enabled: true
-  # Add more packages as needed
-  - name: "ComfyUI-Impact-Pack"
-    repo: "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git"
-    path: "custom_nodes/ComfyUI-Impact-Pack"
-    enabled: false
-```
-
-### Adding Custom ComfyUI Packages
-
-To add custom ComfyUI packages that will be installed during the build process:
-
-1. Edit the `comfyui_packages` section in the `build-config.yaml` file
-2. For each package, specify:
-   - `name`: A descriptive name for the package
-   - `repo`: The Git repository URL
-   - `path`: The installation path relative to the ComfyUI directory
-   - `enabled`: Set to `true` to install the package, `false` to skip it
 
 ### Building Images
 
@@ -90,7 +67,6 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip3 install pyyaml jinja2
 ```
-
 
 
 Build all variants:

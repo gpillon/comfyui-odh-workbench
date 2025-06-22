@@ -112,4 +112,8 @@ VOLUME /opt/app-root/ComfyUI/custom_nodes
 EXPOSE {{ port }}
 
 # Set entrypoint
-ENTRYPOINT ["/opt/app-root/scripts/start-comfyui.sh"] 
+{% if extra_flags %}
+ENTRYPOINT ["/opt/app-root/scripts/start-comfyui.sh", "{{ extra_flags }}"]
+{% else %}
+ENTRYPOINT ["/opt/app-root/scripts/start-comfyui.sh"]
+{% endif %} 

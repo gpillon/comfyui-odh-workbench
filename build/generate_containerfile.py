@@ -75,6 +75,7 @@ def main():
             'user': config['build']['user'],
             'name': variant['name'],
             'tag': variant['tag'],
+            'extra_flags': variant.get('extra_flags', ''),
         }
         
         # Load package lists
