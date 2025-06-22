@@ -44,8 +44,13 @@ RUN chmod +x /opt/app-root/scripts/*.sh && \
 USER {{ user }}
 
 # Clone ComfyUI repository
-RUN git clone {{ comfyui_repo }} /opt/app-root/ComfyUI && \
-    cd /opt/app-root/ComfyUI && \
+RUN git clone {{ comfyui_repo }} /opt/app-root/src/ComfyUI
+USER root
+mv /opt/app-root/src/ComfyUI /opt/app-root/ComfyUI
+chown -R {{ user }}:0 /opt/app-root/ComfyUI
+USER {{ user }}
+
+RUN cd /opt/app-root/ComfyUI && \
     git checkout {{ comfyui_version }} && \
     pip install --upgrade pip && \
     pip install --upgrade setuptools && \
