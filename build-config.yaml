@@ -8,25 +8,6 @@ base:
 
 # Build variants
 variants:
-  - name: "nvidia"
-    tag: "v1.0.0"
-    base_image: "nvcr.io/nvidia/cuda:12.8.0-runtime-ubi9"
-    cuda_version: "12.8"
-    description: "ComfyUI with NVIDIA CUDA support"
-    env:
-      PYTHONUNBUFFERED: "1"
-      DEBIAN_FRONTEND: "noninteractive"
-    packages:
-      - file: "config/os-packages.txt"
-      - file: "config/requirements-comfyui.txt"
-      - custom:
-        - "torch==2.7.1+cu128"
-        - "torchvision==0.22.1+cu128"
-        - "torchaudio==2.7.1+cu128"
-        - "--extra-index-url https://download.pytorch.org/whl/cu128"
-    scripts:
-      - "scripts/install-comfyui-packages.sh"
-      - "scripts/start-comfyui.sh"
 
   - name: "cpu"
     tag: "v1.0.0"
@@ -44,7 +25,25 @@ variants:
         - "torchaudio==2.7.1+cpu"
         - "--extra-index-url https://download.pytorch.org/whl/cpu"
     scripts:
-      - "scripts/install-comfyui-packages.sh"
+      - "scripts/start-comfyui.sh"
+
+  - name: "nvidia"
+    tag: "v1.0.0"
+    base_image: "nvcr.io/nvidia/cuda:12.8.0-runtime-ubi9"
+    cuda_version: "12.8"
+    description: "ComfyUI with NVIDIA CUDA support"
+    env:
+      PYTHONUNBUFFERED: "1"
+      DEBIAN_FRONTEND: "noninteractive"
+    packages:
+      - file: "config/os-packages.txt"
+      - file: "config/requirements-comfyui.txt"
+      - custom:
+        - "torch==2.7.1+cu128"
+        - "torchvision==0.22.1+cu128"
+        - "torchaudio==2.7.1+cu128"
+        - "--extra-index-url https://download.pytorch.org/whl/cu128"
+    scripts:
       - "scripts/start-comfyui.sh"
 
 # Build settings
