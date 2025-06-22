@@ -20,9 +20,9 @@ variants:
       - file: "config/os-packages.txt"
       - file: "config/requirements-comfyui.txt"
       - custom:
-        - "torch"
-        - "torchvision"
-        - "torchaudio"
+        - "torch==2.7.1+cu128"
+        - "torchvision==0.22.1+cu128"
+        - "torchaudio==2.7.1+cu128"
         - "--extra-index-url https://download.pytorch.org/whl/cu128"
     scripts:
       - "scripts/install-comfyui-packages.sh"
@@ -39,9 +39,9 @@ variants:
       - file: "config/os-packages.txt"
       - file: "config/requirements-comfyui.txt"
       - custom:
-        - "torch"
-        - "torchvision"
-        - "torchaudio"
+        - "torch==2.7.1+cpu"
+        - "torchvision==0.22.1+cpu"
+        - "torchaudio==2.7.1+cpu"
         - "--extra-index-url https://download.pytorch.org/whl/cpu"
     scripts:
       - "scripts/install-comfyui-packages.sh"
