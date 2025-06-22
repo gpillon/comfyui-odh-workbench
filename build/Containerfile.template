@@ -28,7 +28,8 @@ RUN dnf update -y && \
 
 # Copy scripts
 COPY scripts/ /opt/app-root/scripts/
-RUN chmod +x /opt/app-root/scripts/*.sh
+RUN chmod +x /opt/app-root/scripts/*.sh && \
+    chown -R {{ user }}:0 /opt/app-root/src
 
 # Switch to non-root user for remaining operations
 USER {{ user }}

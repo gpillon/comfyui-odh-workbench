@@ -50,7 +50,7 @@ variants:
 # Build settings
 build:
   repository: "comfyui"
-  registry: "quay.io/opendatahub"
+  registry: "ghcr.io/gpillon"
   comfyui_repo: "https://github.com/comfyanonymous/ComfyUI.git"
   comfyui_version: "master"
   workdir: "/opt/app-root/src"
