@@ -46,8 +46,8 @@ USER {{ user }}
 # Clone ComfyUI repository
 RUN git clone {{ comfyui_repo }} /opt/app-root/src/ComfyUI
 USER root
-mv /opt/app-root/src/ComfyUI /opt/app-root/ComfyUI
-chown -R {{ user }}:0 /opt/app-root/ComfyUI
+RUN mv /opt/app-root/src/ComfyUI /opt/app-root/ComfyUI && \
+    chown -R {{ user }}:0 /opt/app-root/ComfyUI
 USER {{ user }}
 
 RUN cd /opt/app-root/ComfyUI && \
