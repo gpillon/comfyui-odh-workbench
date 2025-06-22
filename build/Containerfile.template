@@ -1,7 +1,15 @@
 FROM {{ base_image }}
 
-LABEL maintainer="OpenDataHub"
-LABEL description="{{ description }}"
+LABEL maintainer="gpillon" \
+      name="comfyui-{{ name }}" \
+      summary="ComfyUI {{ name }} image for AI image generation" \
+      description="{{ description }}" \
+      io.k8s.display-name="ComfyUI {{ name }} image" \
+      io.k8s.description="{{ description }}" \
+      authoritative-source-url="{{ comfyui_repo }}" \
+      io.openshift.build.commit.ref="{{ comfyui_version }}" \
+      io.openshift.build.source-location="{{ comfyui_repo }}" \
+      io.openshift.build.image="ghcr.io/gpillon/comfyui-{{ name }}:{{ tag }}"
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -9,7 +17,8 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=off \
     DEBIAN_FRONTEND=noninteractive \
     HOME=/opt/app-root/src \
-    PORT=8080
+    PORT=8080 \
+    COMFYUI_PATH=/opt/app-root/ComfyUI
 
 # Set working directory
 WORKDIR /opt/app-root/src
@@ -26,17 +35,23 @@ RUN dnf update -y && \
     {% endfor %} && \
     dnf clean all
 
+# Create necessary directories
+RUN mkdir -p /opt/app-root/ComfyUI \
+    /opt/app-root/src/models \
+    /opt/app-root/ComfyUI/custom_nodes
+
 # Copy scripts
 COPY scripts/ /opt/app-root/scripts/
 RUN chmod +x /opt/app-root/scripts/*.sh && \
-    chown -R {{ user }}:0 /opt/app-root/src
+    chown -R {{ user }}:0 /opt/app-root/src && \
+    chown -R {{ user }}:0 /opt/app-root/ComfyUI
 
 # Switch to non-root user for remaining operations
 USER {{ user }}
 
 # Clone ComfyUI repository
-RUN git clone {{ comfyui_repo }} ComfyUI && \
-    cd ComfyUI && \
+RUN git clone {{ comfyui_repo }} /opt/app-root/ComfyUI && \
+    cd /opt/app-root/ComfyUI && \
     git checkout {{ comfyui_version }} && \
     pip install --upgrade pip && \
     pip install --upgrade setuptools && \
@@ -58,32 +73,55 @@ RUN pip install --no-cache-dir \
     {% endfor %}
 {% endif %}
 
-# # Create directories for ComfyUI
-# RUN mkdir -p /opt/app-root/src/ComfyUI/models/checkpoints \
-#     /opt/app-root/src/ComfyUI/models/loras \
-#     /opt/app-root/src/ComfyUI/models/vae \
-#     /opt/app-root/src/ComfyUI/models/clip \
-#     /opt/app-root/src/ComfyUI/models/controlnet \
-#     /opt/app-root/src/ComfyUI/models/upscale_models \
-#     /opt/app-root/src/ComfyUI/models/embeddings \
-#     /opt/app-root/src/ComfyUI/models/vae_approx \
-#     /opt/app-root/src/ComfyUI/models/gligen \
-#     /opt/app-root/src/ComfyUI/models/unet \
-#     /opt/app-root/src/ComfyUI/input \
-#     /opt/app-root/src/ComfyUI/output
+# Create extra_model_paths.yaml to point to the correct directories
+RUN echo "comfyui:" > /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+    echo "  base_path: /opt/app-root/src/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+    echo "  is_default: true" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+    echo "  checkpoints: /opt/app-root/src/models/checkpoints/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+    echo "  clip: /opt/app-root/src/models/clip/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+    echo "  clip_vision: /opt/app-root/src/models/clip_vision/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+    echo "  configs: /opt/app-root/src/models/configs/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+    echo "  controlnet: /opt/app-root/src/models/controlnet/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+    echo "  diffusion_models: |" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+    echo "    /opt/app-root/src/models/diffusion_models" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+    echo "    /opt/app-root/src/models/unet" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+    echo "  embeddings: /opt/app-root/src/models/embeddings/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+    echo "  loras: /opt/app-root/src/models/loras/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+    echo "  upscale_models: /opt/app-root/src/models/upscale_models/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+    echo "  vae: /opt/app-root/src/models/vae/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+    echo "  gligen: /opt/app-root/src/models/gligen/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml
 
-#Fix permissions for OpenShift
+# Create model subdirectories in the user's directory
+RUN mkdir -p /opt/app-root/src/models/checkpoints \
+    /opt/app-root/src/models/clip \
+    /opt/app-root/src/models/clip_vision \
+    /opt/app-root/src/models/configs \
+    /opt/app-root/src/models/controlnet \
+    /opt/app-root/src/models/diffusion_models \
+    /opt/app-root/src/models/unet \
+    /opt/app-root/src/models/embeddings \
+    /opt/app-root/src/models/loras \
+    /opt/app-root/src/models/upscale_models \
+    /opt/app-root/src/models/vae \
+    /opt/app-root/src/models/gligen \
+    /opt/app-root/src/input \
+    /opt/app-root/src/output
+
+# Fix permissions for OpenShift
 USER root
-RUN find /opt/app-root/src/ComfyUI -type d -exec chmod 775 {} \; && \
-    find /opt/app-root/src/ComfyUI -type f -exec chmod 664 {} \; && \
-    chmod +x /opt/app-root/src/ComfyUI/main.py
+RUN find /opt/app-root/ComfyUI -type d -exec chmod 775 {} \; && \
+    find /opt/app-root/ComfyUI -type f -exec chmod 664 {} \; && \
+    chmod +x /opt/app-root/ComfyUI/main.py && \
+    find /opt/app-root/src/models -type d -exec chmod 775 {} \;
 
 USER {{ user }}
 
-VOLUME /opt/app-root/src/ComfyUI/models
+# Define volumes
+VOLUME /opt/app-root/src/models
+VOLUME /opt/app-root/ComfyUI/custom_nodes
 
 # Expose port
 EXPOSE {{ port }}
 
 # Set entrypoint
-ENTRYPOINT ["/opt/app-root/scripts/start-comfyui-manager.sh"] 
+ENTRYPOINT ["/opt/app-root/scripts/start-comfyui.sh"] 

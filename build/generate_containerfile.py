@@ -73,6 +73,8 @@ def main():
             'comfyui_version': config['build']['comfyui_version'],
             'port': config['build']['port'],
             'user': config['build']['user'],
+            'name': variant['name'],
+            'tag': variant['tag'],
         }
         
         # Load package lists

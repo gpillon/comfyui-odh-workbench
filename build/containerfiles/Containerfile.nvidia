@@ -1,7 +1,15 @@
 FROM nvcr.io/nvidia/cuda:12.8.0-runtime-ubi9
 
-LABEL maintainer="OpenDataHub"
-LABEL description="ComfyUI with NVIDIA CUDA support"
+LABEL maintainer="OpenDataHub" \
+      name="comfyui-nvidia" \
+      summary="ComfyUI nvidia image for AI image generation" \
+      description="ComfyUI with NVIDIA CUDA support" \
+      io.k8s.display-name="ComfyUI nvidia image" \
+      io.k8s.description="ComfyUI with NVIDIA CUDA support" \
+      authoritative-source-url="https://github.com/comfyanonymous/ComfyUI.git" \
+      io.openshift.build.commit.ref="master" \
+      io.openshift.build.source-location="https://github.com/comfyanonymous/ComfyUI.git" \
+      io.openshift.build.image="ghcr.io/gpillon/comfyui-nvidia:v1.0.0"
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -43,24 +51,30 @@ RUN git clone https://github.com/comfyanonymous/ComfyUI.git ComfyUI && \
 # Install Python dependencies
 RUN pip install --no-cache-dir \
 pyaml==25.5.0 \
-torch==2.1.2+cu128 \torchvision==0.16.2+cu128 \torchaudio==2.1.2+cu128 \--extra-index-url https://download.pytorch.org/whl/cu128
+torch \torchvision \torchaudio \--extra-index-url https://download.pytorch.org/whl/cu128
+# # Create directories for ComfyUI
+# RUN mkdir -p /opt/app-root/src/ComfyUI/models/checkpoints \
+#     /opt/app-root/src/ComfyUI/models/loras \
+#     /opt/app-root/src/ComfyUI/models/vae \
+#     /opt/app-root/src/ComfyUI/models/clip \
+#     /opt/app-root/src/ComfyUI/models/controlnet \
+#     /opt/app-root/src/ComfyUI/models/upscale_models \
+#     /opt/app-root/src/ComfyUI/models/embeddings \
+#     /opt/app-root/src/ComfyUI/models/vae_approx \
+#     /opt/app-root/src/ComfyUI/models/gligen \
+#     /opt/app-root/src/ComfyUI/models/unet \
+#     /opt/app-root/src/ComfyUI/input \
+#     /opt/app-root/src/ComfyUI/output
+
+#Fix permissions for OpenShift
+USER root
+RUN find /opt/app-root/src/ComfyUI -type d -exec chmod 775 {} \; && \
+    find /opt/app-root/src/ComfyUI -type f -exec chmod 664 {} \; && \
+    chmod +x /opt/app-root/src/ComfyUI/main.py
+
+USER 1001
+
 VOLUME /opt/app-root/src/ComfyUI/models
-
-# Create directories for ComfyUI
-RUN mkdir -p /opt/app-root/src/ComfyUI/models/checkpoints \
-    /opt/app-root/src/ComfyUI/models/loras \
-    /opt/app-root/src/ComfyUI/models/vae \
-    /opt/app-root/src/ComfyUI/models/clip \
-    /opt/app-root/src/ComfyUI/models/controlnet \
-    /opt/app-root/src/ComfyUI/models/upscale_models \
-    /opt/app-root/src/ComfyUI/models/embeddings \
-    /opt/app-root/src/ComfyUI/models/vae_approx \
-    /opt/app-root/src/ComfyUI/models/gligen \
-    /opt/app-root/src/ComfyUI/models/unet \
-    /opt/app-root/src/ComfyUI/input \
-    /opt/app-root/src/ComfyUI/output
-
-RUN /opt/app-root/scripts/install-comfyui-packages.sh
 
 # Expose port
 EXPOSE 8080
