@@ -1,7 +1,7 @@
-FROM {{ base_image }}
+FROM registry.access.redhat.com/ubi9/python-311
 
 LABEL maintainer="OpenDataHub"
-LABEL description="{{ description }}"
+LABEL description="ComfyUI with CPU support only"
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -21,9 +21,7 @@ RUN dnf update -y && \
     dnf install -y --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm && \
     dnf install -y --nogpgcheck https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm && \
     dnf install -y --allowerasing \
-    {% for package in os_packages %}
-    {% if package|trim %}{{ package }}{% if not loop.last %} \{% endif %}{% endif %}
-    {% endfor %} && \
+gcc \gcc-c++ \make \curl \git \mesa-libGL \glib2 \libSM \libXext \libXrender-devel \python3-devel \wget && \
     dnf clean all
 
 # Copy scripts
@@ -31,34 +29,20 @@ COPY scripts/ /opt/app-root/scripts/
 RUN chmod +x /opt/app-root/scripts/*.sh
 
 # Switch to non-root user for remaining operations
-USER {{ user }}
+USER 1001
 
 # Clone ComfyUI repository
-RUN git clone {{ comfyui_repo }} ComfyUI && \
+RUN git clone https://github.com/comfyanonymous/ComfyUI.git ComfyUI && \
     cd ComfyUI && \
-    git checkout {{ comfyui_version }} && \
+    git checkout master && \
     pip install --upgrade pip && \
     pip install --upgrade setuptools && \
     pip install -r requirements.txt
 
 # Install Python dependencies
-{% if custom_packages %}
 RUN pip install --no-cache-dir \
-    {% for package in python_packages %}
-    {% if package|trim %}{{ package }}{% if not loop.last %} \{% endif %}{% endif %}
-    {% endfor %} \
-    {% for package in custom_packages %}
-    {% if package|trim %}{{ package }}{% if not loop.last %} \{% endif %}{% endif %}
-    {% endfor %}
-{% else %}
-RUN pip install --no-cache-dir \
-    {% for package in python_packages %}
-    {% if package|trim %}{{ package }}{% if not loop.last %} \{% endif %}{% endif %}
-    {% endfor %}
-{% endif %}
-
-VOLUME /opt/app-root/src/ComfyUI/models
-
+pyaml==25.5.0 \
+torch==2.1.2+cpu \torchvision==0.16.2+cpu \torchaudio==2.1.2+cpu \--extra-index-url https://download.pytorch.org/whl/cpu
 # Create directories for ComfyUI
 RUN mkdir -p /opt/app-root/src/ComfyUI/models/checkpoints \
     /opt/app-root/src/ComfyUI/models/loras \
@@ -76,7 +60,7 @@ RUN mkdir -p /opt/app-root/src/ComfyUI/models/checkpoints \
 RUN /opt/app-root/scripts/install-comfyui-packages.sh
 
 # Expose port
-EXPOSE {{ port }}
+EXPOSE 8080
 
 # Set entrypoint
 ENTRYPOINT ["/opt/app-root/scripts/start-comfyui-manager.sh"] 
