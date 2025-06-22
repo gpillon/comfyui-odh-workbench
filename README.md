@@ -12,6 +12,7 @@ ComfyUI is a powerful and modular stable diffusion GUI and backend with a node-b
 - Multiple variants (NVIDIA CUDA, CPU)
 - Pre-installed ComfyUI Manager
 - Optimized for Openshfit AI / OpenDataHub deployment
+- Nginx proxy for OpenShift compatibility and idle culling support
 
 ## Available Images
 
@@ -37,6 +38,15 @@ Then access ComfyUI at http://localhost:8888
 ### Deploying on OpenDataHub
 
 Follow the OpenDataHub documentation for deploying custom container images.
+
+## Network Configuration
+
+The container uses the following network configuration:
+
+- Nginx listens on port 8888 and proxies requests to ComfyUI
+- ComfyUI runs on internal port 8080
+- Nginx provides OpenShift compatibility endpoints at `/api` paths
+- Idle culling support is implemented through the `/api/kernels` endpoint
 
 ## Building Images
 

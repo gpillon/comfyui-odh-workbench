@@ -17,8 +17,12 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=off \
     DEBIAN_FRONTEND=noninteractive \
     HOME=/opt/app-root/src \
-    PORT=8888 \
-    COMFYUI_PATH=/opt/app-root/ComfyUI
+    PORT=8080 \
+    COMFYUI_PATH=/opt/app-root/ComfyUI \
+    NB_PREFIX="" \
+    NGINX_PORT=8888 \
+    RUNTIME_FLAGS="" \
+    EXTRA_FLAGS="{{ extra_flags|default('') }}"
 
 # Set working directory
 WORKDIR /opt/app-root/src
@@ -32,13 +36,26 @@ RUN dnf update -y && \
     dnf install -y --allowerasing \
     {% for package in os_packages %}
     {% if package|trim %}{{ package }}{% if not loop.last %} \{% endif %}{% endif %}
-    {% endfor %} && \
+    {% endfor %} \
+    nginx supervisor fcgiwrap && \
     dnf clean all
+
+# Install NGINX configuration
+RUN mkdir -p /opt/app-root/etc/nginx.d /opt/app-root/etc/nginx.default.d /opt/app-root/api/kernels
 
 # Copy scripts
 COPY scripts/ /opt/app-root/scripts/
+COPY nginx/conf.d/ /etc/nginx/conf.d/
+COPY nginx/api/ /opt/app-root/api/
+COPY supervisord/ /etc/supervisor/conf.d/
+
 RUN chmod +x /opt/app-root/scripts/*.sh && \
-    chown -R {{ user }}:0 /opt/app-root/src
+    chmod +x /opt/app-root/api/kernels/access.cgi && \
+    chown -R {{ user }}:0 /opt/app-root/src && \
+    chown -R {{ user }}:0 /opt/app-root/api && \
+    mkdir -p /var/log/nginx /var/lib/nginx /var/run && \
+    chown -R {{ user }}:0 /var/log/nginx /var/lib/nginx /var/run && \
+    chmod -R g+rwX /var/log/nginx /var/lib/nginx /var/run
 
 # Switch to non-root user for remaining operations
 USER {{ user }}
@@ -108,12 +125,9 @@ USER {{ user }}
 VOLUME /opt/app-root/src/models
 VOLUME /opt/app-root/ComfyUI/custom_nodes
 
-# Expose port
+# Expose ports
 EXPOSE {{ port }}
+EXPOSE 8888
 
 # Set entrypoint
-{% if extra_flags %}
-ENTRYPOINT ["/opt/app-root/scripts/start-comfyui.sh", "{{ extra_flags }}"]
-{% else %}
-ENTRYPOINT ["/opt/app-root/scripts/start-comfyui.sh"]
-{% endif %} 
+ENTRYPOINT ["/opt/app-root/scripts/start-comfyui-with-nginx.sh"] 

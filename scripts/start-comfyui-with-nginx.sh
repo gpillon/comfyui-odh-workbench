@@ -2,6 +2,15 @@
 
 set -e
 
+# Set RUNTIME_FLAGS from command-line arguments
+if [ $# -gt 0 ]; then
+    export RUNTIME_FLAGS="$@"
+fi
+
+# Start nginx and supervisord
+/opt/app-root/scripts/run-nginx.sh &
+/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf &
+
 # Create user site-packages directory in the mounted volume
 USER_SITE_PACKAGES="/opt/app-root/src/.local/lib/python3.11/site-packages"
 mkdir -p "$USER_SITE_PACKAGES"
@@ -56,15 +65,5 @@ mkdir -p /opt/app-root/src/models/checkpoints \
     /opt/app-root/src/input \
     /opt/app-root/src/output
 
-# Change to the ComfyUI directory
-cd /opt/app-root/ComfyUI
-
-# Install ComfyUI Manager if not already installed and DISABLE_MANAGER env variable is not equal to "true"
-if [ ! -d "custom_nodes/ComfyUI-Manager" ] && [ "${DISABLE_MANAGER}" != "true" ]; then
-    echo "Installing ComfyUI Manager..."
-    git clone https://github.com/ltdrdata/ComfyUI-Manager.git custom_nodes/ComfyUI-Manager
-fi
-
-# Start ComfyUI
-echo "Starting ComfyUI..."
-exec python main.py "$@" 
+# Keep the container running
+tail -f /dev/null 

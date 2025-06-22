@@ -27,7 +27,7 @@ variants:
         - "torchsde==0.2.6"
         - "--extra-index-url https://download.pytorch.org/whl/cpu"
     scripts:
-      - "scripts/start-comfyui.sh"
+      - "scripts/start-comfyui-with-nginx.sh"
 
   - name: "nvidia"
     tag: "v1.0.0"
@@ -46,7 +46,7 @@ variants:
         - "torchaudio==2.7.1+cu128"
         - "--extra-index-url https://download.pytorch.org/whl/cu128"
     scripts:
-      - "scripts/start-comfyui.sh"
+      - "scripts/start-comfyui-with-nginx.sh"
 
   - name: "amd"
     tag: "v1.0.0"
@@ -65,7 +65,7 @@ variants:
         - "torchaudio==2.7.1+rocm6.3"
         - "--extra-index-url https://download.pytorch.org/whl/rocm6.3"
     scripts:
-      - "scripts/start-comfyui.sh"
+      - "scripts/start-comfyui-with-nginx.sh"
 
   - name: "intel"
     tag: "v1.0.0"
@@ -78,14 +78,14 @@ variants:
       - file: "config/os-packages.txt"
       - file: "config/requirements-comfyui.txt"
       - custom:
-        - "torch==2.3.1.post0+cxx11.abi"
-        - "torchvision==0.18.1.post0+cxx11.abi"
-        - "torchaudio==2.3.1.post0+cxx11.abi"
-        - "intel-extension-for-pytorch==2.3.110.post0+xpu"
+        - "torch==2.5.1+cxx11.abi"
+        - "torchvision==0.20.1+cxx11.abi"
+        - "torchaudio==2.5.1+cxx11.abi"
+        - "intel-extension-for-pytorch==2.5.10+xpu"
         - "--extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/"
         - "--extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/"
     scripts:
-      - "scripts/start-comfyui.sh"
+      - "scripts/start-comfyui-with-nginx.sh"
 
 # Build settings
 build:
