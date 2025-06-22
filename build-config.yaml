@@ -94,7 +94,7 @@ build:
   comfyui_repo: "https://github.com/comfyanonymous/ComfyUI.git"
   comfyui_version: "master"
   workdir: "/opt/app-root/src"
-  port: 8080
+  port: 8888
   user: 1001 
 
 # Custom ComfyUI packages to install at build time

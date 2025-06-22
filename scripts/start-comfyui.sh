@@ -66,5 +66,5 @@ if [ ! -d "custom_nodes/ComfyUI-Manager" ] && [ "${DISABLE_MANAGER}" != "true" ]
 fi
 
 # Start ComfyUI
-echo "Starting ComfyUI on port ${PORT:-8080}..."
-python main.py --listen 0.0.0.0 --port ${PORT:-8080} "$@" 
+echo "Starting ComfyUI on port ${PORT:-8888}..."
+python main.py --listen 0.0.0.0 --port ${PORT:-8888} "$@" 

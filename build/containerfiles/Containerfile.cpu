@@ -17,7 +17,7 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=off \
     DEBIAN_FRONTEND=noninteractive \
     HOME=/opt/app-root/src \
-    PORT=8080 \
+    PORT=8888 \
     COMFYUI_PATH=/opt/app-root/ComfyUI
 
 # Set working directory
@@ -95,7 +95,7 @@ VOLUME /opt/app-root/src/models
 VOLUME /opt/app-root/ComfyUI/custom_nodes
 
 # Expose port
-EXPOSE 8080
+EXPOSE 8888
 
 # Set entrypoint
 ENTRYPOINT ["/opt/app-root/scripts/start-comfyui.sh", "--cpu"]

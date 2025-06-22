@@ -26,13 +26,13 @@ Images are built and published to the GitHub Container Registry:
 
 ```bash
 # NVIDIA GPU
-podman run -it --rm -p 8080:8080 --gpus all ghcr.io/gpillon/comfyui-nvidia:v1.0.0
+podman run -it --rm -p 8888:8888 --gpus all ghcr.io/gpillon/comfyui-nvidia:v1.0.0
 
 # CPU only
-podman run -it --rm -p 8080:8080 ghcr.io/gpillon/comfyui-cpu:v1.0.0
+podman run -it --rm -p 8888:8888 ghcr.io/gpillon/comfyui-cpu:v1.0.0
 ```
 
-Then access ComfyUI at http://localhost:8080
+Then access ComfyUI at http://localhost:8888
 
 ### Deploying on OpenDataHub
 
