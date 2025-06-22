@@ -1,0 +1,126 @@
+name: Build and Push ComfyUI Images
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      variant:
+        description: 'Specific variant to build (leave empty for all)'
+        required: false
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml jinja2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate Containerfiles
+        run: |
+          mkdir -p build/containerfiles
+          if [ -n "${{ github.event.inputs.variant }}" ]; then
+            python build/generate_containerfile.py --variant ${{ github.event.inputs.variant }}
+          else
+            python build/generate_containerfile.py
+          fi
+
+      - name: Extract metadata
+        id: meta
+        run: |
+          echo "date=$(date +%Y%m%d)" >> $GITHUB_OUTPUT
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          else
+            echo "version=latest" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push images
+        run: |
+          # Load configuration
+          CONFIG=$(python -c "import yaml; print(yaml.safe_load(open('build-config.yaml')))")
+          
+          # Get registry and repository
+          REGISTRY=$(echo "$CONFIG" | python -c "import sys, yaml; print(yaml.safe_load(sys.stdin)['build']['registry'])")
+          REPO=$(echo "$CONFIG" | python -c "import sys, yaml; print(yaml.safe_load(sys.stdin)['build']['repository'])")
+          
+          # Replace registry with GitHub Container Registry
+          REGISTRY="ghcr.io/${{ github.repository_owner }}"
+          
+          # Get variants
+          if [ -n "${{ github.event.inputs.variant }}" ]; then
+            VARIANTS=$(echo "$CONFIG" | python -c "import sys, yaml, json; config=yaml.safe_load(sys.stdin); print(json.dumps([v for v in config['variants'] if v['name'] == '${{ github.event.inputs.variant }}']))")
+          else
+            VARIANTS=$(echo "$CONFIG" | python -c "import sys, yaml, json; print(json.dumps(yaml.safe_load(sys.stdin)['variants']))")
+          fi
+          
+          # Build and push each variant
+          echo "$VARIANTS" | python -c "
+          import json, sys, os, subprocess
+          variants = json.loads(sys.stdin.read())
+          registry = '$REGISTRY'
+          repo = '$REPO'
+          version = '${{ steps.meta.outputs.version }}'
+          
+          for variant in variants:
+              name = variant['name']
+              tag = variant['tag']
+              
+              # Image tags
+              image_tags = [
+                  f'{registry}/{repo}-{name}:{tag}',
+                  f'{registry}/{repo}-{name}:{version}'
+              ]
+              
+              # If this is the latest version, add latest tag
+              if version == 'latest':
+                  image_tags.append(f'{registry}/{repo}-{name}:latest')
+              
+              # Build and push command
+              cmd = [
+                  'docker', 'buildx', 'build',
+                  '--platform', 'linux/amd64',
+                  '--push'
+              ]
+              
+              # Add tags
+              for tag in image_tags:
+                  cmd.extend(['-t', tag])
+              
+              # Add Containerfile
+              cmd.extend(['-f', f'build/containerfiles/Containerfile.{name}', '.'])
+              
+              # Run command
+              print(f'Building and pushing {name}...')
+              print(' '.join(cmd))
+              subprocess.run(cmd, check=True)
+          "

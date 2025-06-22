@@ -1,0 +1,72 @@
+FROM {{ base_image }}
+
+LABEL maintainer="OpenDataHub"
+LABEL description="{{ description }}"
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=off \
+    DEBIAN_FRONTEND=noninteractive \
+    HOME=/opt/app-root/src \
+    PORT=8080
+
+# Set working directory
+WORKDIR /opt/app-root/src
+
+# Install OS packages
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    {% for package in os_packages %}
+    {{ package }} {% if not loop.last %}\{% endif %}
+    {% endfor %} && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Clone ComfyUI repository
+RUN git clone {{ comfyui_repo }} ComfyUI && \
+    cd ComfyUI && \
+    git checkout {{ comfyui_version }}
+
+# Install Python dependencies
+{% if custom_packages %}
+RUN pip install --no-cache-dir \
+    {% for package in python_packages %}
+    {{ package }} {% if not loop.last %}\{% endif %}
+    {% endfor %} \
+    {% for package in custom_packages %}
+    {{ package }} {% if not loop.last %}\{% endif %}
+    {% endfor %}
+{% else %}
+RUN pip install --no-cache-dir \
+    {% for package in python_packages %}
+    {{ package }} {% if not loop.last %}\{% endif %}
+    {% endfor %}
+{% endif %}
+
+# Copy scripts
+COPY scripts/ /opt/app-root/scripts/
+RUN chmod +x /opt/app-root/scripts/*.sh
+
+# Create directories for ComfyUI
+RUN mkdir -p /opt/app-root/src/ComfyUI/models/checkpoints \
+    /opt/app-root/src/ComfyUI/models/loras \
+    /opt/app-root/src/ComfyUI/models/vae \
+    /opt/app-root/src/ComfyUI/models/clip \
+    /opt/app-root/src/ComfyUI/models/controlnet \
+    /opt/app-root/src/ComfyUI/models/upscale_models \
+    /opt/app-root/src/ComfyUI/models/embeddings \
+    /opt/app-root/src/ComfyUI/models/vae_approx \
+    /opt/app-root/src/ComfyUI/models/gligen \
+    /opt/app-root/src/ComfyUI/models/unet \
+    /opt/app-root/src/ComfyUI/input \
+    /opt/app-root/src/ComfyUI/output
+
+# Set user
+USER {{ user }}
+
+# Expose port
+EXPOSE {{ port }}
+
+# Set entrypoint
+ENTRYPOINT ["/opt/app-root/scripts/start-comfyui-manager.sh"] 
