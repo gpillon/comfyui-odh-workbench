@@ -73,7 +73,6 @@ def main():
         repository = config['build']['repository']
         name = variant['name']
         tag = variant['tag']
-        extra_flags = variant.get('extra_flags', '')
         
         # Full image name
         image_tag = f"{registry}/{repository}-{name}:{tag}"

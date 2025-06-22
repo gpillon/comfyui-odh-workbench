@@ -24,21 +24,18 @@ fi
 
 # Configure Python to use user site-packages
 export PYTHONPATH="$USER_SITE_PACKAGES:$PYTHONPATH"
-export PYTHONUSERBASE="/opt/app-root/src/.local"
 
-# Configure pip to use custom prefix (don't use --user flag to avoid conflicts)
-export PIP_PREFIX="/opt/app-root/src/.local"
+# Configure pip to use target directory only (simplest approach to avoid conflicts)
+# Remove any potentially conflicting environment variables
+unset PIP_USER
+unset PIP_PREFIX
+unset PYTHONUSERBASE
 
-# Create pip configuration directory and file
+# Create pip configuration directory and file with minimal config
 PIP_CONFIG_DIR="/opt/app-root/src/.config/pip"
 mkdir -p "$PIP_CONFIG_DIR"
 cat > "$PIP_CONFIG_DIR/pip.conf" << EOF
-[global]
-prefix = /opt/app-root/src/.local
-target = /opt/app-root/src/.local/lib/python3.11/site-packages
-
 [install]
-prefix = /opt/app-root/src/.local
 target = /opt/app-root/src/.local/lib/python3.11/site-packages
 EOF
 

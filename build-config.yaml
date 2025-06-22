@@ -24,6 +24,7 @@ variants:
         - "torch==2.7.1+cpu"
         - "torchvision==0.22.1+cpu"
         - "torchaudio==2.7.1+cpu"
+        - "torchsde==0.2.6"
         - "--extra-index-url https://download.pytorch.org/whl/cpu"
     scripts:
       - "scripts/start-comfyui.sh"
@@ -44,6 +45,45 @@ variants:
         - "torchvision==0.22.1+cu128"
         - "torchaudio==2.7.1+cu128"
         - "--extra-index-url https://download.pytorch.org/whl/cu128"
+    scripts:
+      - "scripts/start-comfyui.sh"
+
+  - name: "amd"
+    tag: "v1.0.0"
+    base_image: "registry.access.redhat.com/ubi9/python-311"
+    rocm_version: "6.3"
+    description: "ComfyUI with AMD ROCM support"
+    env:
+      PYTHONUNBUFFERED: "1"
+      DEBIAN_FRONTEND: "noninteractive"
+    packages:
+      - file: "config/os-packages.txt"
+      - file: "config/requirements-comfyui.txt"
+      - custom:
+        - "torch==2.7.1+rocm6.3"
+        - "torchvision==0.22.1+rocm6.3"
+        - "torchaudio==2.7.1+rocm6.3"
+        - "--extra-index-url https://download.pytorch.org/whl/rocm6.3"
+    scripts:
+      - "scripts/start-comfyui.sh"
+
+  - name: "intel"
+    tag: "v1.0.0"
+    base_image: "registry.access.redhat.com/ubi9/python-311"
+    description: "ComfyUI with Intel support"
+    env:
+      PYTHONUNBUFFERED: "1"
+      DEBIAN_FRONTEND: "noninteractive"
+    packages:
+      - file: "config/os-packages.txt"
+      - file: "config/requirements-comfyui.txt"
+      - custom:
+        - "torch==2.3.1.post0+cxx11.abi"
+        - "torchvision==0.18.1.post0+cxx11.abi"
+        - "torchaudio==2.3.1.post0+cxx11.abi"
+        - "intel-extension-for-pytorch==2.3.110.post0+xpu"
+        - "--extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/"
+        - "--extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/"
     scripts:
       - "scripts/start-comfyui.sh"
 

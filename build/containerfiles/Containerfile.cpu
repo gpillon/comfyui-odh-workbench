@@ -51,7 +51,7 @@ USER 1001
 # Install Python dependencies
 RUN pip install --no-cache-dir \
 pyaml==25.5.0 \
-torch==2.7.1+cpu \torchvision==0.22.1+cpu \torchaudio==2.7.1+cpu \--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.7.1+cpu \torchvision==0.22.1+cpu \torchaudio==2.7.1+cpu \torchsde==0.2.6 \--extra-index-url https://download.pytorch.org/whl/cpu
 RUN cd /opt/app-root/ComfyUI && \
     git checkout master && \
     pip install --upgrade pip && \
