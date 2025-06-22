@@ -50,18 +50,6 @@ RUN mv /opt/app-root/src/ComfyUI /opt/app-root/ComfyUI && \
     chown -R {{ user }}:0 /opt/app-root/ComfyUI
 USER {{ user }}
 
-RUN cd /opt/app-root/ComfyUI && \
-    git checkout {{ comfyui_version }} && \
-    pip install --upgrade pip && \
-    pip install --upgrade setuptools && \
-    grep -v "torch\|torchaudio\|torchvision" requirements.txt > requirements_filtered.txt && \
-    pip install -r requirements_filtered.txt
-
-# set permissions for ComfyUI
-USER root
-RUN chown -R {{ user }}:0 /opt/app-root/ComfyUI/custom_nodes
-USER {{ user }}
-
 # Install Python dependencies
 {% if custom_packages %}
 RUN pip install --no-cache-dir \
@@ -77,6 +65,18 @@ RUN pip install --no-cache-dir \
     {% if package|trim %}{{ package }}{% if not loop.last %} \{% endif %}{% endif %}
     {% endfor %}
 {% endif %}
+
+RUN cd /opt/app-root/ComfyUI && \
+    git checkout {{ comfyui_version }} && \
+    pip install --upgrade pip && \
+    pip install --upgrade setuptools && \
+    grep -v "torch\|torchaudio\|torchvision" requirements.txt > requirements_filtered.txt && \
+    pip install -r requirements_filtered.txt
+
+# set permissions for ComfyUI
+USER root
+RUN chown -R {{ user }}:0 /opt/app-root/ComfyUI/custom_nodes
+USER {{ user }}
 
 # Create extra_model_paths.yaml to point to the correct directories
 RUN echo "comfyui:" > /opt/app-root/ComfyUI/extra_model_paths.yaml && \
