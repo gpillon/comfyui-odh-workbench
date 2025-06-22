@@ -35,16 +35,10 @@ RUN dnf update -y && \
     {% endfor %} && \
     dnf clean all
 
-# Create necessary directories
-RUN mkdir -p /opt/app-root/ComfyUI \
-    /opt/app-root/src/models \
-    /opt/app-root/ComfyUI/custom_nodes
-
 # Copy scripts
 COPY scripts/ /opt/app-root/scripts/
 RUN chmod +x /opt/app-root/scripts/*.sh && \
-    chown -R {{ user }}:0 /opt/app-root/src && \
-    chown -R {{ user }}:0 /opt/app-root/ComfyUI
+    chown -R {{ user }}:0 /opt/app-root/src
 
 # Switch to non-root user for remaining operations
 USER {{ user }}
@@ -56,6 +50,11 @@ RUN git clone {{ comfyui_repo }} /opt/app-root/ComfyUI && \
     pip install --upgrade pip && \
     pip install --upgrade setuptools && \
     pip install -r requirements.txt
+
+# set permissions for ComfyUI
+USER root
+RUN chown -R {{ user }}:0 /opt/app-root/ComfyUI/custom_nodes
+USER {{ user }}
 
 # Install Python dependencies
 {% if custom_packages %}
