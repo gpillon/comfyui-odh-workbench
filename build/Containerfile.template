@@ -58,23 +58,29 @@ RUN pip install --no-cache-dir \
     {% endfor %}
 {% endif %}
 
+# # Create directories for ComfyUI
+# RUN mkdir -p /opt/app-root/src/ComfyUI/models/checkpoints \
+#     /opt/app-root/src/ComfyUI/models/loras \
+#     /opt/app-root/src/ComfyUI/models/vae \
+#     /opt/app-root/src/ComfyUI/models/clip \
+#     /opt/app-root/src/ComfyUI/models/controlnet \
+#     /opt/app-root/src/ComfyUI/models/upscale_models \
+#     /opt/app-root/src/ComfyUI/models/embeddings \
+#     /opt/app-root/src/ComfyUI/models/vae_approx \
+#     /opt/app-root/src/ComfyUI/models/gligen \
+#     /opt/app-root/src/ComfyUI/models/unet \
+#     /opt/app-root/src/ComfyUI/input \
+#     /opt/app-root/src/ComfyUI/output
+
+#Fix permissions for OpenShift
+USER root
+RUN find /opt/app-root/src/ComfyUI -type d -exec chmod 775 {} \; && \
+    find /opt/app-root/src/ComfyUI -type f -exec chmod 664 {} \; && \
+    chmod +x /opt/app-root/src/ComfyUI/main.py
+
+USER {{ user }}
+
 VOLUME /opt/app-root/src/ComfyUI/models
-
-# Create directories for ComfyUI
-RUN mkdir -p /opt/app-root/src/ComfyUI/models/checkpoints \
-    /opt/app-root/src/ComfyUI/models/loras \
-    /opt/app-root/src/ComfyUI/models/vae \
-    /opt/app-root/src/ComfyUI/models/clip \
-    /opt/app-root/src/ComfyUI/models/controlnet \
-    /opt/app-root/src/ComfyUI/models/upscale_models \
-    /opt/app-root/src/ComfyUI/models/embeddings \
-    /opt/app-root/src/ComfyUI/models/vae_approx \
-    /opt/app-root/src/ComfyUI/models/gligen \
-    /opt/app-root/src/ComfyUI/models/unet \
-    /opt/app-root/src/ComfyUI/input \
-    /opt/app-root/src/ComfyUI/output
-
-RUN /opt/app-root/scripts/install-comfyui-packages.sh
 
 # Expose port
 EXPOSE {{ port }}
