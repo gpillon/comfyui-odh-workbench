@@ -53,11 +53,14 @@ mkdir -p /opt/app-root/src/models/checkpoints \
     /opt/app-root/src/models/upscale_models \
     /opt/app-root/src/models/vae \
     /opt/app-root/src/models/gligen \
+    /opt/app-root/src/models/vae_approx \
+    /opt/app-root/src/custom_nodes \
+    /opt/app-root/src/user \
     /opt/app-root/src/input \
     /opt/app-root/src/output
 
 # Change to the ComfyUI directory
-cd /opt/app-root/ComfyUI
+cd /opt/app-root/src
 
 # Install ComfyUI extensions from config file
 EXTENSIONS_CONFIG="/opt/app-root/etc/comfyui-extensions.json"
@@ -113,6 +116,11 @@ fi
 # Start ComfyUI
 echo "Starting ComfyUI..."
 
+# Create a log file for the startup monitor
+STARTUP_LOG="/tmp/comfyui_startup.log"
+touch "$STARTUP_LOG"
+chmod 644 "$STARTUP_LOG"
+
 # Create a startup complete marker after ComfyUI is ready
 # We'll use a background process to check the /prompt endpoint
 # and create the marker when it's available
@@ -121,7 +129,7 @@ echo "Starting ComfyUI..."
     COUNTER=0
     MAX_WAIT=600  # 10 minutes timeout
     
-    echo "Waiting for ComfyUI to be ready..."
+    echo "Waiting for ComfyUI to be ready..." | tee -a "$STARTUP_LOG"
     
     # Loop until we get a successful response or timeout
     while [ $COUNTER -lt $MAX_WAIT ]; do
@@ -131,11 +139,12 @@ echo "Starting ComfyUI..."
         # If we get 200 OK or 405 Method Not Allowed (expected for GET on /prompt), mark as ready
         if [ "$HTTP_RESPONSE" -eq 200 ] || [ "$HTTP_RESPONSE" -eq 405 ]; then
             touch /tmp/.startup_complete
-            echo "ComfyUI is ready! Startup complete marker created."
+            echo "ComfyUI is ready! Startup complete marker created." | tee -a "$STARTUP_LOG"
             break
         fi
         
         # Increment counter and sleep
+        echo "Waiting for ComfyUI to be ready... $COUNTER seconds, response: $HTTP_RESPONSE" | tee -a "$STARTUP_LOG"
         COUNTER=$((COUNTER + 5))
         sleep 5
     done
@@ -143,8 +152,14 @@ echo "Starting ComfyUI..."
     # If we timed out, still create the marker but log a warning
     if [ $COUNTER -ge $MAX_WAIT ]; then
         touch /tmp/.startup_complete
-        echo "WARNING: Timed out waiting for ComfyUI to be ready after ${MAX_WAIT} seconds. Creating marker anyway."
+        echo "WARNING: Timed out waiting for ComfyUI to be ready after ${MAX_WAIT} seconds. Creating marker anyway." | tee -a "$STARTUP_LOG"
     fi
-) &
+) > /dev/stdout 2>&1 &
 
+# Print the log file path for reference
+echo "Startup progress is being logged to $STARTUP_LOG"
+echo "You can monitor the progress with: tail -f $STARTUP_LOG"
+
+# Start ComfyUI
+cd /opt/app-root/ComfyUI
 exec python main.py "$@" 
