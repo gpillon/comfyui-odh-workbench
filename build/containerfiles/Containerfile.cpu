@@ -17,7 +17,7 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=off \
     DEBIAN_FRONTEND=noninteractive \
     HOME=/opt/app-root/src \
-    PORT=8080 \
+    PORT=8188 \
     COMFYUI_PATH=/opt/app-root/ComfyUI \
     NB_PREFIX="" \
     NGINX_PORT=8888 \
@@ -73,7 +73,7 @@ USER 1001
 
 # Install Python dependencies
 RUN pip install --no-cache-dir \
-pyaml==25.5.0 \gitpython==3.1.44 \
+pyaml==25.5.0 \
 torch==2.7.1+cpu \torchvision==0.22.1+cpu \torchaudio==2.7.1+cpu \torchsde==0.2.6 \--extra-index-url https://download.pytorch.org/whl/cpu
 RUN cd /opt/app-root/ComfyUI && \
     git checkout v0.3.41 && \

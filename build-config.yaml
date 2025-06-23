@@ -34,6 +34,7 @@ variants:
     base_image: "nvcr.io/nvidia/cuda:12.8.0-runtime-ubi9"
     cuda_version: "12.8"
     description: "ComfyUI with NVIDIA CUDA support"
+    recommended_accelerators: '["nvidia.com/gpu"]'
     env:
       PYTHONUNBUFFERED: "1"
       DEBIAN_FRONTEND: "noninteractive"
@@ -53,6 +54,7 @@ variants:
     base_image: "registry.access.redhat.com/ubi9/python-311"
     rocm_version: "6.3"
     description: "ComfyUI with AMD ROCM support"
+    recommended_accelerators: '["amd.com/gpu"]'
     env:
       PYTHONUNBUFFERED: "1"
       DEBIAN_FRONTEND: "noninteractive"
@@ -71,6 +73,7 @@ variants:
     tag: "v1.0.0"
     base_image: "registry.access.redhat.com/ubi9/python-311"
     description: "ComfyUI with Intel support"
+    recommended_accelerators: '["intel.com/gpu"]'
     env:
       PYTHONUNBUFFERED: "1"
       DEBIAN_FRONTEND: "noninteractive"

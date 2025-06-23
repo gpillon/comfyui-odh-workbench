@@ -44,7 +44,7 @@ Follow the OpenDataHub documentation for deploying custom container images.
 The container uses the following network configuration:
 
 - Nginx listens on port 8888 and proxies requests to ComfyUI
-- ComfyUI runs on internal port 8080
+- ComfyUI runs on internal port 8188
 - Nginx provides OpenShift compatibility endpoints at `/api` paths
 - Idle culling support is implemented through the `/api/kernels` endpoint
 

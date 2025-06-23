@@ -126,11 +126,11 @@ echo "Starting ComfyUI..."
     # Loop until we get a successful response or timeout
     while [ $COUNTER -lt $MAX_WAIT ]; do
         # Check if ComfyUI /prompt endpoint is responding
-        HTTP_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/prompt)
+        HTTP_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8188/prompt)
         
         # If we get 200 OK or 405 Method Not Allowed (expected for GET on /prompt), mark as ready
         if [ "$HTTP_RESPONSE" -eq 200 ] || [ "$HTTP_RESPONSE" -eq 405 ]; then
-            touch /opt/app-root/src/.startup_complete
+            touch /tmp/.startup_complete
             echo "ComfyUI is ready! Startup complete marker created."
             break
         fi
@@ -142,7 +142,7 @@ echo "Starting ComfyUI..."
     
     # If we timed out, still create the marker but log a warning
     if [ $COUNTER -ge $MAX_WAIT ]; then
-        touch /opt/app-root/src/.startup_complete
+        touch /tmp/.startup_complete
         echo "WARNING: Timed out waiting for ComfyUI to be ready after ${MAX_WAIT} seconds. Creating marker anyway."
     fi
 ) &

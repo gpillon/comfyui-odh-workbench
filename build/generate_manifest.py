@@ -4,7 +4,6 @@ import os
 import yaml
 import json
 import argparse
-from pathlib import Path
 
 def load_config(config_file):
     """Load the build configuration from YAML file"""
@@ -25,8 +24,9 @@ def extract_package_version(package_str):
     if "==" in package_str:
         parts = package_str.split("==")
         name = parts[0]
-        version = parts[1].split("+")[0]  # Remove any +cpu, +cu128, etc.
-        return {"name": name, "version": version}
+        return {"name": name, "version": parts[1]}
+        # version = parts[1].split("+")[0]  # Remove any +cpu, +cu128, etc.
+        # return {"name": name, "version": version}        
     return {"name": package_str, "version": "latest"}
 
 def generate_manifest(variant, config, output_path):
@@ -54,6 +54,10 @@ def generate_manifest(variant, config, output_path):
             "tags": []
         }
     }
+    
+    # Add recommended_accelerators if present in the variant
+    if 'recommended_accelerators' in variant:
+        manifest["metadata"]["annotations"]["opendatahub.io/recommended-accelerators"] = variant['recommended_accelerators']
     
     # Get software packages
     software_packages = [
@@ -96,7 +100,7 @@ def generate_manifest(variant, config, output_path):
     # Add ComfyUI custom packages if enabled
     for pkg in config.get('comfyui_packages', []):
         if pkg.get('enabled', True):  # Default to True if 'enabled' is not specified
-            software_packages.append({"name": pkg['name'], "version": "latest"})
+            software_packages.append({"name": pkg['name'], "version": pkg['version']})
     
     # Create tag
     registry = config['build']['registry']

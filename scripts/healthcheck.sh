@@ -9,7 +9,7 @@ echo "Content-Type: text/plain"
 echo
 
 # Path to the marker file indicating startup completion
-STARTUP_COMPLETE_MARKER="/opt/app-root/src/.startup_complete"
+STARTUP_COMPLETE_MARKER="/tmp/.startup_complete"
 
 # Check if we're still in startup phase
 if [ ! -f "$STARTUP_COMPLETE_MARKER" ]; then
@@ -19,7 +19,7 @@ if [ ! -f "$STARTUP_COMPLETE_MARKER" ]; then
 fi
 
 # Startup is complete, check the actual ComfyUI endpoint
-HEALTHCHECK_URL="http://localhost:8080/prompt"
+HEALTHCHECK_URL="http://localhost:8188/prompt"
 HTTP_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $HEALTHCHECK_URL)
 
 if [ "$HTTP_RESPONSE" -eq 200 ] || [ "$HTTP_RESPONSE" -eq 405 ]; then

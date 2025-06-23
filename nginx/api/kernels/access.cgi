@@ -7,7 +7,7 @@ echo
 CURRENT_TIME=$(date -Iseconds)
 
 # Try to query the ComfyUI prompt endpoint
-PROMPT_STATUS=$(curl -s http://127.0.0.1:8080/prompt)
+PROMPT_STATUS=$(curl -s http://127.0.0.1:8188/prompt)
 if [[ $? -eq 0 && "$PROMPT_STATUS" == *"queue_remaining"* ]]; then
     # Parse the JSON response if it contains queue_remaining
     QUEUE_REMAINING=$(echo $PROMPT_STATUS | grep -Po '"queue_remaining":\K[0-9]+' || echo "0")

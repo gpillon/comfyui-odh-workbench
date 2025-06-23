@@ -6,6 +6,7 @@ metadata:
     opendatahub.io/notebook-image-name: ComfyUI intel
     opendatahub.io/notebook-image-order: '1'
     opendatahub.io/notebook-image-url: https://github.com/comfyanonymous/ComfyUI
+    opendatahub.io/recommended-accelerators: '["intel.com/gpu"]'
   labels:
     opendatahub.io/notebook-image: 'true'
   name: comfyui-intel-notebook
@@ -16,12 +17,12 @@ spec:
   - annotations:
       opendatahub.io/notebook-build-commit: comfyui-intel-v1.0.0
       opendatahub.io/notebook-python-dependencies: '[{"name": "pyaml", "version":
-        "25.5.0"}, {"name": "torch", "version": "2.5.1"}, {"name": "torchvision",
-        "version": "0.20.1"}, {"name": "torchaudio", "version": "2.5.1"}, {"name":
-        "intel-extension-for-pytorch", "version": "2.5.10"}]'
-      opendatahub.io/notebook-software: '[{"name": "ComfyUI", "version": "0.3.41"},
+        "25.5.0"}, {"name": "torch", "version": "2.5.1+cxx11.abi"}, {"name": "torchvision",
+        "version": "0.20.1+cxx11.abi"}, {"name": "torchaudio", "version": "2.5.1+cxx11.abi"},
+        {"name": "intel-extension-for-pytorch", "version": "2.5.10+xpu"}]'
+      opendatahub.io/notebook-software: '[{"name": "ComfyUI", "version": "v0.3.41"},
         {"name": "Python", "version": "v3.11"}, {"name": "ComfyUI-Manager", "version":
-        "latest"}]'
+        "3.33"}]'
       opendatahub.io/workbench-image-recommended: 'true'
       openshift.io/imported-from: ghcr.io/gpillon/comfyui
     from:
