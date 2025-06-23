@@ -9,5 +9,8 @@ mkdir -p /tmp/log/nginx
 CURRENT_TIME=$(date -Iseconds)
 echo '[{"id":"comfyui","name":"comfyui","last_activity":"'$CURRENT_TIME'","execution_state":"idle","connections":1}]' > /tmp/log/nginx/comfyui.access.log
 
+#here i want to replace the '${NB_PREFIX}' with the value of the env variable NB_PREFIX using envsubst
+envsubst < /opt/app-root/etc/nginx/conf.d/comfyui.conf.template > /opt/app-root/etc/nginx/conf.d/comfyui.conf
+
 # Start nginx with our custom configuration
-exec nginx -c /etc/nginx/nginx.conf -g "daemon off;" 
+exec nginx -c /opt/app-root/etc/nginx/nginx.conf -g "daemon off;"

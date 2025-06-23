@@ -21,21 +21,21 @@ jobs:
       variants: ${{ steps.variants.outputs.variants }}
       version: ${{ steps.meta.outputs.version }}
     steps:
-      - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@main
-        with:
-          # this might remove tools that are actually needed,
-          # if set to "true" but frees about 6 GB
-          tool-cache: false
+      # - name: Free Disk Space (Ubuntu)
+      #   uses: jlumbroso/free-disk-space@main
+      #   with:
+      #     # this might remove tools that are actually needed,
+      #     # if set to "true" but frees about 6 GB
+      #     tool-cache: false
           
-          # all of these default to true, but feel free to set to
-          # "false" if necessary for your workflow
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: true
+      #     # all of these default to true, but feel free to set to
+      #     # "false" if necessary for your workflow
+      #     android: true
+      #     dotnet: true
+      #     haskell: true
+      #     large-packages: true
+      #     docker-images: true
+      #     swap-storage: true
       
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -221,11 +221,8 @@ jobs:
           mkdir -p build/manifests
           
           # Get successful variants
-          SUCCESSFUL_VARIANTS=$(echo '${{ toJSON(needs.build.outputs.built_variants) }}' | python -c "
-          import json, sys, yaml
-          
-          # Load build outputs
-          build_outputs = json.loads(sys.stdin.read())
+          SUCCESSFUL_VARIANTS=$(python -c "
+          import yaml, json, os
           
           # Load config
           with open('build-config.yaml', 'r') as f:
@@ -234,11 +231,12 @@ jobs:
           # Get all variants
           all_variants = [v['name'] for v in config['variants']]
           
-          # Filter only successful variants
-          successful_variants = []
-          for variant in all_variants:
-              if variant in build_outputs and build_outputs[variant] == 'success':
-                  successful_variants.append(variant)
+          # Filter only successful variants based on input
+          variant = os.environ.get('GITHUB_EVENT_INPUTS_VARIANT')
+          if variant:
+              successful_variants = [variant]
+          else:
+              successful_variants = all_variants
           
           # Print as comma-separated list
           print(','.join(successful_variants))
