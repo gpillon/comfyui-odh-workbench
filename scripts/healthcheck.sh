@@ -4,6 +4,10 @@
 # During startup phase, it always returns success
 # After startup, it checks the actual ComfyUI endpoint
 
+# Output HTTP header for CGI
+echo "Content-Type: text/plain"
+echo
+
 # Path to the marker file indicating startup completion
 STARTUP_COMPLETE_MARKER="/opt/app-root/src/.startup_complete"
 
