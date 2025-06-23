@@ -7,6 +7,7 @@ metadata:
     opendatahub.io/notebook-image-order: '1'
     opendatahub.io/notebook-image-url: https://github.com/comfyanonymous/ComfyUI
   labels:
+    opendatahub.io/dashboard: 'true'
     opendatahub.io/notebook-image: 'true'
   name: comfyui-cpu-notebook
 spec:
@@ -14,7 +15,7 @@ spec:
     local: true
   tags:
   - annotations:
-      opendatahub.io/notebook-build-commit: comfyui-cpu-v1.0.0
+      opendatahub.io/notebook-build-commit: comfyui-cpu-v1.0.1
       opendatahub.io/notebook-python-dependencies: '[{"name": "pyaml", "version":
         "25.5.0"}, {"name": "torch", "version": "2.7.1+cpu"}, {"name": "torchvision",
         "version": "0.22.1+cpu"}, {"name": "torchaudio", "version": "2.7.1+cpu"},
@@ -26,7 +27,7 @@ spec:
       openshift.io/imported-from: ghcr.io/gpillon/comfyui
     from:
       kind: DockerImage
-      name: ghcr.io/gpillon/comfyui-cpu:v1.0.0
-    name: v1.0.0
+      name: ghcr.io/gpillon/comfyui-cpu:v1.0.1
+    name: v1.0.1
     referencePolicy:
       type: Source

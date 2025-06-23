@@ -9,7 +9,7 @@ LABEL maintainer="gpillon" \
       authoritative-source-url="https://github.com/comfyanonymous/ComfyUI.git" \
       io.openshift.build.commit.ref="master" \
       io.openshift.build.source-location="https://github.com/comfyanonymous/ComfyUI.git" \
-      io.openshift.build.image="ghcr.io/gpillon/comfyui-nvidia:v1.0.0"
+      io.openshift.build.image="ghcr.io/gpillon/comfyui-nvidia:v1.0.1"
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \

@@ -38,7 +38,8 @@ def generate_manifest(variant, config, output_path):
         "metadata": {
             "labels": {
                 "opendatahub.io/notebook-image": "true",
-                "opendatahub.io/dashboard": "true"
+                "opendatahub.io/dashboard": "true",
+                "app.kubernetes.io/created-by": "byon"
             },
             "annotations": {
                 "opendatahub.io/notebook-image-url": "https://github.com/comfyanonymous/ComfyUI",
@@ -59,6 +60,8 @@ def generate_manifest(variant, config, output_path):
     # Add recommended_accelerators if present in the variant
     if 'recommended_accelerators' in variant:
         manifest["metadata"]["annotations"]["opendatahub.io/recommended-accelerators"] = variant['recommended_accelerators']
+    else:
+        manifest["metadata"]["annotations"]["opendatahub.io/recommended-accelerators"] = "[]"
     
     # Get software packages
     software_packages = [

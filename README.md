@@ -27,10 +27,10 @@ Images are built and published to the GitHub Container Registry:
 
 ```bash
 # NVIDIA GPU
-podman run -it --rm -p 8888:8888 --gpus all ghcr.io/gpillon/comfyui-nvidia:v1.0.0
+podman run -it --rm -p 8888:8888 --gpus all ghcr.io/gpillon/comfyui-nvidia:v1.0.1
 
 # CPU only
-podman run -it --rm -p 8888:8888 ghcr.io/gpillon/comfyui-cpu:v1.0.0
+podman run -it --rm -p 8888:8888 ghcr.io/gpillon/comfyui-cpu:v1.0.1
 ```
 
 Then access ComfyUI at http://localhost:8888
@@ -63,7 +63,7 @@ Edit the `build-config.yaml` file to customize your build:
 ```yaml
 variants:
   - name: "nvidia"
-    tag: "v1.0.0"
+    tag: "v1.0.1"
     base_image: "nvidia/cuda:11.8.0-runtime-ubuntu22.04"
     # additional configuration...
 
