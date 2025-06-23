@@ -37,7 +37,8 @@ def generate_manifest(variant, config, output_path):
         "kind": "ImageStream",
         "metadata": {
             "labels": {
-                "opendatahub.io/notebook-image": "true"
+                "opendatahub.io/notebook-image": "true",
+                "opendatahub.io/dashboard": "true"
             },
             "annotations": {
                 "opendatahub.io/notebook-image-url": "https://github.com/comfyanonymous/ComfyUI",
