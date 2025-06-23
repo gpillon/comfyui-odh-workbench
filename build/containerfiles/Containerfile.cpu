@@ -43,8 +43,8 @@ RUN mkdir -p /opt/app-root/etc/nginx.d /opt/app-root/etc/nginx.default.d /opt/ap
 
 # Copy scripts
 COPY scripts/ /opt/app-root/scripts/
-COPY nginx/conf.d/ /etc/nginx/conf.d/
-COPY nginx/nginx.conf /etc/nginx/nginx.conf
+COPY nginx/conf.d/ /opt/app-root/etc/nginx/conf.d/
+COPY nginx/nginx.conf /opt/app-root/etc/nginx/nginx.conf
 COPY nginx/api/ /opt/app-root/api/
 COPY supervisord/ /etc/supervisor/conf.d/
 
@@ -66,17 +66,19 @@ USER 1001
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /opt/app-root/src/ComfyUI
 USER root
 RUN mv /opt/app-root/src/ComfyUI /opt/app-root/ComfyUI && \
-    chown -R 1001:0 /opt/app-root/ComfyUI
+    chown -R 1001:0 /opt/app-root/ComfyUI && \
+    chown -R 1001:0 /opt/app-root/etc/nginx/conf.d
 USER 1001
 
 # Install Python dependencies
 RUN pip install --no-cache-dir \
-pyaml==25.5.0 \
+pyaml==25.5.0 \gitpython==3.1.44 \
 torch==2.7.1+cpu \torchvision==0.22.1+cpu \torchaudio==2.7.1+cpu \torchsde==0.2.6 \--extra-index-url https://download.pytorch.org/whl/cpu
 RUN cd /opt/app-root/ComfyUI && \
     git checkout v0.3.41 && \
     pip install --upgrade pip && \
     pip install --upgrade setuptools && \
+    pip install gitpython && \
     grep -v "torch\|torchaudio\|torchvision" requirements.txt > requirements_filtered.txt && \
     pip install -r requirements_filtered.txt
 
