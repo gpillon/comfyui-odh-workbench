@@ -92,7 +92,7 @@ build:
   repository: "comfyui"
   registry: "ghcr.io/gpillon"
   comfyui_repo: "https://github.com/comfyanonymous/ComfyUI.git"
-  comfyui_version: "master"
+  comfyui_version: "v0.3.41"
   workdir: "/opt/app-root/src"
   port: 8888
   user: 1001 
@@ -100,6 +100,7 @@ build:
 # Custom ComfyUI packages to install at build time
 comfyui_packages:
   - name: "ComfyUI-Manager"
+    version: "3.33"
     repo: "https://github.com/ltdrdata/ComfyUI-Manager.git"
     path: "custom_nodes/ComfyUI-Manager"
     enabled: true

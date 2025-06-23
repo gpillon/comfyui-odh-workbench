@@ -43,6 +43,7 @@ def main():
     parser.add_argument('--config', default='build-config.yaml', help='Path to build configuration file')
     parser.add_argument('--variant', help='Specific variant to build (default: all variants)')
     parser.add_argument('--skip-generate', action='store_true', help='Skip generating Containerfiles')
+    parser.add_argument('--skip-generate-manifests', action='store_true', help='Skip generating manifests for OpenShift')
     args = parser.parse_args()
     
     # Load configuration
@@ -52,6 +53,16 @@ def main():
     if not args.skip_generate:
         generate_script = Path('build/generate_containerfile.py')
         cmd = [str(generate_script), '--config', args.config]
+        
+        if args.variant:
+            cmd.extend(['--variant', args.variant])
+        
+        subprocess.run(cmd, check=True)
+        
+    # Generate manifests if requested
+    if not args.skip_generate_manifests:
+        generate_manifest_script = Path('build/generate_manifest.py')
+        cmd = [str(generate_manifest_script), '--config', args.config]
         
         if args.variant:
             cmd.extend(['--variant', args.variant])

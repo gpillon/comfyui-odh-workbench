@@ -67,4 +67,39 @@ fi
 
 # Start ComfyUI
 echo "Starting ComfyUI..."
+
+# Create a startup complete marker after ComfyUI is ready
+# We'll use a background process to check the /prompt endpoint
+# and create the marker when it's available
+(
+    # Initialize counter for timeout
+    COUNTER=0
+    MAX_WAIT=600  # 10 minutes timeout
+    
+    echo "Waiting for ComfyUI to be ready..."
+    
+    # Loop until we get a successful response or timeout
+    while [ $COUNTER -lt $MAX_WAIT ]; do
+        # Check if ComfyUI /prompt endpoint is responding
+        HTTP_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/prompt)
+        
+        # If we get 200 OK or 405 Method Not Allowed (expected for GET on /prompt), mark as ready
+        if [ "$HTTP_RESPONSE" -eq 200 ] || [ "$HTTP_RESPONSE" -eq 405 ]; then
+            touch /opt/app-root/src/.startup_complete
+            echo "ComfyUI is ready! Startup complete marker created."
+            break
+        fi
+        
+        # Increment counter and sleep
+        COUNTER=$((COUNTER + 5))
+        sleep 5
+    done
+    
+    # If we timed out, still create the marker but log a warning
+    if [ $COUNTER -ge $MAX_WAIT ]; then
+        touch /opt/app-root/src/.startup_complete
+        echo "WARNING: Timed out waiting for ComfyUI to be ready after ${MAX_WAIT} seconds. Creating marker anyway."
+    fi
+) &
+
 exec python main.py "$@" 

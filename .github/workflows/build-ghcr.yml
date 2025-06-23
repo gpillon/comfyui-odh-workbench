@@ -21,6 +21,22 @@ jobs:
       variants: ${{ steps.variants.outputs.variants }}
       version: ${{ steps.meta.outputs.version }}
     steps:
+    - name: Free Disk Space (Ubuntu)
+      uses: jlumbroso/free-disk-space@main
+      with:
+        # this might remove tools that are actually needed,
+        # if set to "true" but frees about 6 GB
+        tool-cache: false
+        
+        # all of these default to true, but feel free to set to
+        # "false" if necessary for your workflow
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        docker-images: true
+        swap-storage: true
+    
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -91,6 +107,10 @@ jobs:
         variant: ${{ fromJson(needs.prepare.outputs.variants) }}
       fail-fast: false
     
+    outputs:
+      build_status: ${{ steps.set_build_status.outputs.status }}
+      built_variants: ${{ steps.set_build_status.outputs.built_variants }}
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -124,6 +144,8 @@ jobs:
           " >> $GITHUB_ENV
 
       - name: Build and push ${{ matrix.variant.name }} image
+        id: build_push
+        continue-on-error: true
         run: |
           NAME="${{ matrix.variant.name }}"
           TAG="${{ matrix.variant.tag }}"
@@ -159,3 +181,90 @@ jobs:
           echo "Building and pushing ${NAME}..."
           echo "Command: ${DOCKER_CMD[*]}"
           "${DOCKER_CMD[@]}"
+      
+      - name: Set build status
+        id: set_build_status
+        if: always()
+        run: |
+          if [ "${{ steps.build_push.outcome }}" == "success" ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "built_variants=${{ matrix.variant.name }}" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "built_variants=" >> $GITHUB_OUTPUT
+          fi
+
+  generate-manifests:
+    needs: [prepare, build]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Generate manifests
+        run: |
+          mkdir -p build/manifests
+          
+          # Get successful variants
+          SUCCESSFUL_VARIANTS=$(echo '${{ toJSON(needs.build.outputs.built_variants) }}' | python -c "
+          import json, sys, yaml
+          
+          # Load build outputs
+          build_outputs = json.loads(sys.stdin.read())
+          
+          # Load config
+          with open('build-config.yaml', 'r') as f:
+              config = yaml.safe_load(f)
+          
+          # Get all variants
+          all_variants = [v['name'] for v in config['variants']]
+          
+          # Filter only successful variants
+          successful_variants = []
+          for variant in all_variants:
+              if variant in build_outputs and build_outputs[variant] == 'success':
+                  successful_variants.append(variant)
+          
+          # Print as comma-separated list
+          print(','.join(successful_variants))
+          ")
+          
+          # Generate manifests only for successful builds
+          if [ -n "$SUCCESSFUL_VARIANTS" ]; then
+            for VARIANT in $(echo $SUCCESSFUL_VARIANTS | tr ',' ' '); do
+              echo "Generating manifest for $VARIANT"
+              python build/generate_manifest.py --variant $VARIANT
+            done
+          else
+            echo "No successful builds to generate manifests for"
+          fi
+
+      - name: Upload manifests as artifacts
+        if: ${{ hashFiles('build/manifests/*') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: manifests
+          path: build/manifests/
+          retention-days: 7
+
+      - name: Upload manifests to release
+        if: startsWith(github.ref, 'refs/tags/v') && hashFiles('build/manifests/*') != ''
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/manifests/*
+          token: ${{ secrets.GITHUB_TOKEN }}
