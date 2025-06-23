@@ -44,6 +44,7 @@ def main():
     parser.add_argument('--variant', help='Specific variant to build (default: all variants)')
     parser.add_argument('--skip-generate', action='store_true', help='Skip generating Containerfiles')
     parser.add_argument('--skip-generate-manifests', action='store_true', help='Skip generating manifests for OpenShift')
+    parser.add_argument('--skip-generate-extensions', action='store_true', help='Skip generating extensions configuration')
     args = parser.parse_args()
     
     # Load configuration
@@ -57,6 +58,12 @@ def main():
         if args.variant:
             cmd.extend(['--variant', args.variant])
         
+        subprocess.run(cmd, check=True)
+    
+    # Generate extensions configuration if needed
+    if not args.skip_generate_extensions:
+        generate_extensions_script = Path('build/generate_extensions_config.py')
+        cmd = [str(generate_extensions_script), '--config', args.config]
         subprocess.run(cmd, check=True)
         
     # Generate manifests if requested

@@ -48,6 +48,9 @@ COPY nginx/nginx.conf /etc/nginx/nginx.conf
 COPY nginx/api/ /opt/app-root/api/
 COPY supervisord/ /etc/supervisor/conf.d/
 
+# Generate and copy ComfyUI extensions configuration
+COPY build/extensions/comfyui-extensions.json /opt/app-root/etc/comfyui-extensions.json
+
 RUN chmod +x /opt/app-root/scripts/*.sh && \
     chmod +x /opt/app-root/api/kernels/access.cgi && \
     chown -R 1001:0 /opt/app-root/src && \

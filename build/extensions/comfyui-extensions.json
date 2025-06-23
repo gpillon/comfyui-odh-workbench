@@ -1,0 +1,9 @@
+[
+  {
+    "name": "ComfyUI-Manager",
+    "version": "3.33",
+    "repo": "https://github.com/ltdrdata/ComfyUI-Manager.git",
+    "path": "custom_nodes/ComfyUI-Manager",
+    "enabled": true
+  }
+]

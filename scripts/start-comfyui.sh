@@ -59,10 +59,55 @@ mkdir -p /opt/app-root/src/models/checkpoints \
 # Change to the ComfyUI directory
 cd /opt/app-root/ComfyUI
 
-# Install ComfyUI Manager if not already installed and DISABLE_MANAGER env variable is not equal to "true"
-if [ ! -d "custom_nodes/ComfyUI-Manager" ] && [ "${DISABLE_MANAGER}" != "true" ]; then
-    echo "Installing ComfyUI Manager..."
-    git clone https://github.com/ltdrdata/ComfyUI-Manager.git custom_nodes/ComfyUI-Manager
+# Install ComfyUI extensions from config file
+EXTENSIONS_CONFIG="/opt/app-root/etc/comfyui-extensions.json"
+if [ -f "$EXTENSIONS_CONFIG" ]; then
+    echo "Installing ComfyUI extensions from configuration..."
+    
+    # Parse the JSON file and process each extension
+    cat "$EXTENSIONS_CONFIG" | python3 -c '
+import json
+import sys
+import os
+import subprocess
+
+try:
+    extensions = json.load(sys.stdin)
+    for ext in extensions:
+        name = ext.get("name", "")
+        repo = ext.get("repo", "")
+        path = ext.get("path", "")
+        enabled = ext.get("enabled", False)
+        
+        if not (name and repo and path and enabled):
+            continue
+            
+        # Skip if already installed
+        if os.path.exists(path):
+            print(f"Extension {name} already installed at {path}, skipping...")
+            continue
+            
+        print(f"Installing {name} from {repo} to {path}...")
+        # Create parent directory if needed
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        
+        # Clone the repository
+        try:
+            subprocess.run(["git", "clone", repo, path], check=True)
+            print(f"Successfully installed {name}")
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to install {name}: {e}")
+except Exception as e:
+    print(f"Error processing extensions configuration: {e}")
+'
+else
+    echo "No extensions configuration found at $EXTENSIONS_CONFIG"
+    
+    # Install ComfyUI Manager as fallback if not already installed and not disabled
+    if [ ! -d "custom_nodes/ComfyUI-Manager" ] && [ "${DISABLE_MANAGER}" != "true" ]; then
+        echo "Installing ComfyUI Manager (fallback)..."
+        git clone https://github.com/Comfy-Org/ComfyUI-Manager.git custom_nodes/ComfyUI-Manager
+    fi
 fi
 
 # Start ComfyUI

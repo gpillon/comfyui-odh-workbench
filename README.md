@@ -105,3 +105,28 @@ This project is licensed under the GPL-3.0 License - see the LICENSE file for de
 
 - [ComfyUI](https://github.com/comfyanonymous/ComfyUI) - The original ComfyUI project
 - [OpenDataHub](https://opendatahub.io/) - Open source end-to-end AI/ML platform on OpenShift
+
+## Dynamic ComfyUI Extensions
+
+The container now supports dynamic installation of ComfyUI extensions based on configuration in the `build-config.yaml` file. Extensions are specified in the `comfyui_packages` section:
+
+```yaml
+comfyui_packages:
+  - name: "ComfyUI-Manager"
+    version: "3.33"
+    repo: "https://github.com/ltdrdata/ComfyUI-Manager.git"
+    path: "custom_nodes/ComfyUI-Manager"
+    enabled: true
+  # Add more packages as needed following the same format:
+  # - name: "Package-Name"
+  #   repo: "https://github.com/author/repo.git"
+  #   path: "custom_nodes/Package-Name"
+  #   enabled: true
+```
+
+During the build process:
+1. The `build/generate_extensions_config.py` script generates a JSON configuration file from the YAML
+2. This JSON file is copied to `/opt/app-root/etc/comfyui-extensions.json` in the container
+3. At startup, the `start-comfyui.sh` script reads this file and installs the specified extensions
+
+If no extensions configuration is found, the script falls back to installing ComfyUI Manager (unless disabled with the `DISABLE_MANAGER=true` environment variable).
