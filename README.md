@@ -7,14 +7,17 @@ This repository contains a dynamic builder for ComfyUI images optimized for Open
 ```bash
 # Nvidia GPU
 oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.1/imagestream-nvidia.yaml -n redhat-ods-applications
-# CPU Only (advised only for testing)
+
+# CPU Only (recommended for testing purposes only)
 oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.1/imagestream-cpu.yaml -n redhat-ods-applications
+
 # Intel GPU
 oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.1/imagestream-intel.yaml -n redhat-ods-applications
+
 # AMD GPU (still WIP)
-https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.1/imagestream-amd.yaml -n redhat-ods-applications
+oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.1/imagestream-amd.yaml -n redhat-ods-applications
 ```
-And then create the Notebook in your workspace with the custom image.
+And then create the Notebook in your workspace using the custom image.
 
 ## Overview
 
