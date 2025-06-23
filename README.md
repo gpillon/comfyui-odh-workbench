@@ -2,6 +2,20 @@
 
 This repository contains a dynamic builder for ComfyUI images optimized for OpenDataHub on OpenShift AI.
 
+## TL;DR
+
+```bash
+# Nvidia GPU
+oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.1/imagestream-nvidia.yaml -n redhat-ods-applications
+# CPU Only (advised only for testing)
+oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.1/imagestream-cpu.yaml -n redhat-ods-applications
+# Intel GPU
+oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.1/imagestream-intel.yaml -n redhat-ods-applications
+# AMD GPU (still WIP)
+https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.1/imagestream-amd.yaml -n redhat-ods-applications
+```
+And then create the Notebook in your workspace with the custom image.
+
 ## Overview
 
 ComfyUI is a powerful and modular stable diffusion GUI and backend with a node-based interface. This project creates container images of ComfyUI that are ready to use in OpenDataHub/OpenShift AI environments.
