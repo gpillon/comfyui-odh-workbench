@@ -13,13 +13,13 @@ server {
     }
 
     # Required for OpenShift liveness/readiness probes
-    location = ${NB_PREFIX}/api {
+    location ${NB_PREFIX}/api {
         return 302 /healthz;
         access_log off;
     }
 
     # Required for idle culling
-    location = ${NB_PREFIX}/api/kernels {
+    location ${NB_PREFIX}/api/kernels {
         return 302 $custom_scheme://$http_host/api/kernels/;
         access_log off;
     }
@@ -32,7 +32,7 @@ server {
     location /api/kernels/ {
         index access.cgi;
         fastcgi_index access.cgi;
-        include fastcgi_params;
+        include /etc/nginx/fastcgi_params;
         fastcgi_param SCRIPT_FILENAME /opt/app-root/api/kernels/access.cgi;
         fastcgi_pass unix:/var/run/fcgiwrap.socket;
         gzip off;
@@ -42,7 +42,7 @@ server {
     # Health check endpoint
     location /healthz {
         fastcgi_pass unix:/var/run/fcgiwrap.socket;
-        include fastcgi_params;
+        include /etc/nginx/fastcgi_params;
         fastcgi_param SCRIPT_FILENAME /opt/app-root/scripts/healthcheck.sh;
         access_log off;
     }
