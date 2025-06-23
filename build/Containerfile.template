@@ -59,7 +59,8 @@ RUN chmod +x /opt/app-root/scripts/*.sh && \
     chown -R {{ user }}:0 /opt/app-root/api && \
     mkdir -p /var/log/nginx /var/lib/nginx /var/run && \
     chown -R {{ user }}:0 /var/log/nginx /var/lib/nginx /var/run && \
-    chmod -R g+rwX /var/log/nginx /var/lib/nginx /var/run
+    chmod -R g+rwX /var/log/nginx /var/lib/nginx /var/run && \
+    chmod -R ug+rwX /opt/app-root/etc/nginx/conf.d
 
 # Switch to non-root user for remaining operations
 USER {{ user }}
