@@ -2,6 +2,19 @@
 
 This repository contains a dynamic builder for ComfyUI images optimized for OpenDataHub on OpenShift AI.
 
+## TL;DR: Quickstart
+
+```bash
+# NVIDIA GPU
+oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.1/imagestream-nvidia.yaml -n redhat-ods-applications
+# INTEL
+oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.1/imagestream-intel.yaml -n redhat-ods-applications
+# CPU
+oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.1/imagestream-cpu.yaml -n redhat-ods-applications
+# AMD (WIP)
+oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.1/imagestream-amd.yaml -n redhat-ods-applications
+```
+
 ## Overview
 
 ComfyUI is a powerful and modular stable diffusion GUI and backend with a node-based interface. This project creates container images of ComfyUI that are ready to use in OpenDataHub/OpenShift AI environments.
@@ -48,6 +61,27 @@ The container uses the following network configuration:
 - Nginx provides OpenShift compatibility endpoints at `/api` paths
 - Idle culling support is implemented through the `/api/kernels` endpoint
 
+## File Cleanup (For ServingRuntime)
+
+The container includes an automatic file cleanup system that can be enabled to remove old files from the input and output directories:
+
+- Set `CLEANUP_USER_INPUT_OUTPUT=true` to enable automatic cleanup
+- By default, files older than 60 minutes will be removed
+- Customize the retention time by setting `CLEANUP_MAX_AGE_MINUTES` to the desired value in minutes
+- Only files are deleted, directories are preserved
+- Cleanup runs every 15 minutes
+
+Example:
+```bash
+# Enable cleanup with default settings (60 minutes)
+export CLEANUP_USER_INPUT_OUTPUT=true
+
+# Enable cleanup, set custom retention time (1 hour), run check every 900 seconds
+export CLEANUP_USER_INPUT_OUTPUT=true
+export CLEANUP_MAX_AGE_MINUTES=60 
+export CLEANUP_INTERVAL_SECONDS
+```
+
 ## Building Images
 
 ### Prerequisites
@@ -63,7 +97,7 @@ Edit the `build-config.yaml` file to customize your build:
 ```yaml
 variants:
   - name: "nvidia"
-    tag: "v1.0.1"
+    tag: "vX.Y.Z"
     base_image: "nvidia/cuda:11.8.0-runtime-ubuntu22.04"
     # additional configuration...
 

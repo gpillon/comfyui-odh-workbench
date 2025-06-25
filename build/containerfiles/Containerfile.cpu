@@ -9,7 +9,7 @@ LABEL maintainer="gpillon" \
       authoritative-source-url="https://github.com/comfyanonymous/ComfyUI.git" \
       io.openshift.build.commit.ref="v0.3.41" \
       io.openshift.build.source-location="https://github.com/comfyanonymous/ComfyUI.git" \
-      io.openshift.build.image="ghcr.io/gpillon/comfyui-cpu:v1.0.1"
+      io.openshift.build.image="ghcr.io/gpillon/comfyui-cpu:v1.0.2"
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -19,6 +19,9 @@ ENV PYTHONUNBUFFERED=1 \
     HOME=/opt/app-root/src \
     PORT=8188 \
     COMFYUI_PATH=/opt/app-root/ComfyUI \
+    CLEANUP_USER_INPUT_OUTPUT=false \
+    CLEANUP_MAX_AGE_MINUTES=60 \
+    CLEANUP_INTERVAL_SECONDS=900 \
     NB_PREFIX="" \
     NGINX_PORT=8888 \
     RUNTIME_FLAGS="" \
