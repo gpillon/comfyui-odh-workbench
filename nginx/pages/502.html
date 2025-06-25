@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComfyUI - Loading</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #232526 0%, #414345 100%);
+            color: #fff;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .loader {
+            border: 8px solid #383838;
+            border-top: 8px solid #4ecca3;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 30px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg);}
+            100% { transform: rotate(360deg);}
+        }
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        .subtitle {
+            font-size: 1.3rem;
+            color: #cccccc;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .retry {
+            margin-top: 24px;
+            font-size: 1.1rem;
+            color: #4ecca3;
+        }
+    </style>
+</head>
+<body>
+    <div class="loader"></div>
+    <div class="title">ComfyUI is loading</div>
+    <div class="subtitle">
+        The application may be temporarily unavailable.<br>
+        Please wait, we are trying to reconnect...
+    </div>
+    <div class="retry">
+        Retrying in <span id="countdown">15</span> seconds...
+    </div>
+    <script>
+        let countdown = 15;
+        const countdownElem = document.getElementById('countdown');
+        setInterval(() => {
+            countdown--;
+            if (countdown <= 0) {
+                window.location.reload();
+            } else {
+                countdownElem.textContent = countdown;
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

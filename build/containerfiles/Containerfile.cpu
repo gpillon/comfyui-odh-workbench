@@ -22,7 +22,7 @@ ENV PYTHONUNBUFFERED=1 \
     CLEANUP_USER_INPUT_OUTPUT=false \
     CLEANUP_MAX_AGE_MINUTES=60 \
     CLEANUP_INTERVAL_SECONDS=900 \
-    NB_PREFIX="" \
+    NB_PREFIX="/notebook/default/default" \
     NGINX_PORT=8888 \
     RUNTIME_FLAGS="" \
     EXTRA_FLAGS="--cpu"
@@ -49,6 +49,7 @@ COPY scripts/ /opt/app-root/scripts/
 COPY nginx/conf.d/ /opt/app-root/etc/nginx/conf.d/
 COPY nginx/nginx.conf /opt/app-root/etc/nginx/nginx.conf
 COPY nginx/api/ /opt/app-root/api/
+COPY nginx/pages/ /opt/app-root/etc/nginx/pages/
 COPY supervisord/ /etc/supervisor/conf.d/
 
 # Generate and copy ComfyUI extensions configuration

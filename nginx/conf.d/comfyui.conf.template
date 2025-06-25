@@ -79,4 +79,11 @@ server {
     # Access logs for ComfyUI
     access_log /tmp/log/nginx/comfyui.access.log;
     error_log /tmp/log/nginx/comfyui.error.log;
+
+    error_page 502 504 /502.html;
+    location = /502.html {
+        root /opt/app-root/etc/nginx/pages;
+        internal;
+    }
+
 } 
