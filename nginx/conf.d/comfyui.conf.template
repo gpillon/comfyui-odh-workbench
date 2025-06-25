@@ -2,15 +2,8 @@ server {
     listen ${NGINX_PORT};
     server_name localhost;
 
-    # Define variables for dynamic paths
-    set $custom_scheme "http";
-    set $nb_prefix "";
-    if ($http_x_forwarded_proto) {
-        set $custom_scheme $http_x_forwarded_proto;
-    }
-    if ($http_x_forwarded_prefix) {
-        set $nb_prefix $http_x_forwarded_prefix;
-    }
+    # Include common configuration
+    include /opt/app-root/etc/nginx/extra/comfyui-common.conf;
 
     # Redirect ${NB_PREFIX} to root path
     location ${NB_PREFIX} {
@@ -18,50 +11,7 @@ server {
         access_log off;
     }
 
-    # Required for OpenShift liveness/readiness probes
-    location ${NB_PREFIX}/api {
-        return 302 /healthz;
-        access_log off;
-    }
-
-    # Required for idle culling
-    location ${NB_PREFIX}/api/kernels {
-        return 302 $custom_scheme://$http_host/api/kernels/;
-        access_log off;
-    }
-
-    location ${NB_PREFIX}/api/kernels/ {
-        return 302 $custom_scheme://$http_host/api/kernels/;
-        access_log off;
-    }
-
-    location /api/kernels/ {
-        index access.cgi;
-        fastcgi_index access.cgi;
-        include /etc/nginx/fastcgi_params;
-        fastcgi_param SCRIPT_FILENAME /opt/app-root/api/kernels/access.cgi;
-        fastcgi_pass unix:/var/run/fcgiwrap.socket;
-        gzip off;
-        access_log off;
-    }
-
-    # Health check endpoint
-    location ~ ^/healthz/?$ {
-        fastcgi_pass unix:/var/run/fcgiwrap.socket;
-        include /etc/nginx/fastcgi_params;
-        fastcgi_param SCRIPT_FILENAME /opt/app-root/scripts/healthcheck.sh;
-        access_log off;
-    }
-
-    # ComfyUI prompt endpoint - pass through to ComfyUI
-    location /prompt {
-        proxy_pass http://127.0.0.1:8188/prompt;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        access_log off;
-    }
-
-    # Main proxy to ComfyUI
+    # Main proxy to ComfyUI (standard mode with frontend)
     location / {
         proxy_pass http://127.0.0.1:8188;
         proxy_http_version 1.1;
@@ -74,16 +24,6 @@ server {
         
         # WebSocket support
         proxy_read_timeout 86400;
-    }
-
-    # Access logs for ComfyUI
-    access_log /tmp/log/nginx/comfyui.access.log;
-    error_log /tmp/log/nginx/comfyui.error.log;
-
-    error_page 502 504 /502.html;
-    location = /502.html {
-        root /opt/app-root/etc/nginx/pages;
-        internal;
     }
 
 } 

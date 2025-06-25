@@ -1,0 +1,31 @@
+server {
+    listen ${NGINX_PORT};
+    server_name localhost;
+
+    # Include common configuration
+    include /opt/app-root/etc/nginx/extra/comfyui-common.conf;
+
+    # Redirect ${NB_PREFIX} to API mode page
+    location ${NB_PREFIX} {
+        return 302 $custom_scheme://$http_host/api-mode.html;
+        access_log off;
+    }
+
+    # API mode courtesy page
+    location = /api-mode.html {
+        root /opt/app-root/etc/nginx/pages;
+    }
+
+    # Redirect all other root paths to API mode page
+    location = / {
+        return 302 /api-mode.html;
+        access_log off;
+    }
+
+    # Block all other frontend paths - redirect to API mode page
+    location / {
+        return 302 /api-mode.html;
+        access_log off;
+    }
+
+} 
