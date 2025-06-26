@@ -82,6 +82,88 @@ export CLEANUP_MAX_AGE_MINUTES=60
 export CLEANUP_INTERVAL_SECONDS
 ```
 
+## Simple Inference Endpoint (For ServingRuntime)
+
+When running as a ServiceRuntime, the container can provide a simple inference endpoint that allows direct workflow execution through HTTP requests. This feature can be enabled by setting the `ENABLE_EZ_INFER` environment variable to `true`.
+
+### Endpoint Usage
+
+**POST `/ezinfer`**
+
+Send a workflow JSON directly to ComfyUI for execution. The workflow should be included in the request body as JSON.
+
+Example request:
+```bash
+curl -X POST http://your-service-url/ezinfer \
+  -H "Content-Type: application/json" \
+  -d '{
+    "4": {
+      "inputs": {
+        "filename_prefix": "ComfyUI",
+        "images": [
+          "8",
+          0
+        ]
+      },
+      "class_type": "SaveImage",
+      "_meta": {
+        "title": "Save Image"
+      }
+    },
+    "8": {
+      "inputs": {
+        "seed": 1023641672961582,
+        "strength": 1,
+        "image": [
+          "9",
+          0
+        ]
+      },
+      "class_type": "ImageAddNoise",
+      "_meta": {
+        "title": "ImageAddNoise"
+      }
+    },
+    "9": {
+      "inputs": {
+        "width": 512,
+        "height": 512,
+        "batch_size": 1,
+        "color": 0
+      },
+      "class_type": "EmptyImage",
+      "_meta": {
+        "title": "EmptyImage"
+      }
+    }
+  }'
+```
+
+### Environment Variables
+
+The inference endpoint supports the following environment variables:
+
+- **`ENABLE_EZ_INFER`**: Set to `true` to enable the simple inference endpoint (default: `false`)
+- **`INFERENCE_DEBUG`**: Set to `true` to enable debug logging for inference operations (default: `false`)
+- **`INFERENCE_RANDOM_SEED_NODES`**: Set to `true` to automatically randomize seed values in workflows (default: `true`)
+
+### Cache Avoidance
+
+The `INFERENCE_RANDOM_SEED_NODES` environment variable is particularly useful in development environments where you might send the same workflow multiple times. When enabled (default), it automatically modifies any `seed` parameters found in the workflow with random values, preventing ComfyUI from serving cached results. This ensures that each request generates new content even when using identical workflows.
+
+When `INFERENCE_RANDOM_SEED_NODES=true`:
+- The system automatically finds nodes with `seed` inputs and replaces them with random values
+- If a node has a `control_after_generate` parameter, it's set to `"randomize"`
+- This behavior helps avoid ComfyUI's caching mechanism in shared development environments
+
+Example:
+```bash
+# Enable inference endpoint with debug logging and cache avoidance
+export ENABLE_EZ_INFER=true
+export INFERENCE_DEBUG=true
+export INFERENCE_RANDOM_SEED_NODES=true
+```
+
 ## Building Images
 
 ### Prerequisites

@@ -2,11 +2,10 @@ name: Build and Push ComfyUI Images
 
 on:
   push:
-    branches: [ main ]
     tags:
       - 'v*'
   pull_request:
-    branches: [ main ]
+    branches: [ dev ]
   workflow_dispatch:
     inputs:
       variant:
