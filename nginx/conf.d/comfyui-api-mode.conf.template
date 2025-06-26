@@ -4,6 +4,9 @@ server {
 
     # Include common configuration
     include /opt/app-root/etc/nginx/extra/comfyui-common.conf;
+    
+    # Include EzInfer configuration if enabled
+    include /opt/app-root/etc/nginx/extra/ezinfer.conf;
 
     # Redirect ${NB_PREFIX} to API mode page
     location ${NB_PREFIX} {

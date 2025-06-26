@@ -8,7 +8,7 @@ MAX_AGE_MINUTES=${CLEANUP_MAX_AGE_MINUTES:-60}
 
 cleanup() {
     if [ "$CLEANUP_USER_INPUT_OUTPUT" != "true" ]; then
-        echo "[$(date)] Cleanup disabled. Set CLEANUP_USER_INPUT_OUTPUT=true to enable."
+        # echo "[$(date)] Cleanup disabled. Set CLEANUP_USER_INPUT_OUTPUT=true to enable."
         return 0
     fi
     

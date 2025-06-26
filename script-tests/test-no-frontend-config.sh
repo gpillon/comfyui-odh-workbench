@@ -1,27 +1,27 @@
 #!/bin/bash
 
-# Test script to verify NO_FRONTEND configuration switching
+# Test script to verify API_MODE configuration switching
 
 set -e
 
-echo "Testing NO_FRONTEND configuration switching..."
+echo "Testing API_MODE configuration switching..."
 
-# Test 1: NO_FRONTEND=false (default behavior)
-echo "Test 1: NO_FRONTEND=false (default)"
-export NO_FRONTEND=false
+# Test 1: API_MODE=false (default behavior)
+echo "Test 1: API_MODE=false (default)"
+export API_MODE=false
 
-if [ "${NO_FRONTEND}" = "true" ]; then
+if [ "${API_MODE}" = "true" ]; then
     echo "✗ Should use standard configuration but logic says API mode"
     exit 1
 else
     echo "✓ Using standard configuration with frontend"
 fi
 
-# Test 2: NO_FRONTEND=true (API-only mode)
-echo "Test 2: NO_FRONTEND=true (API-only mode)"
-export NO_FRONTEND=true
+# Test 2: API_MODE=true (API-only mode)
+echo "Test 2: API_MODE=true (API-only mode)"
+export API_MODE=true
 
-if [ "${NO_FRONTEND}" = "true" ]; then
+if [ "${API_MODE}" = "true" ]; then
     echo "✓ Using API-only mode configuration"
 else
     echo "✗ Should use API mode but logic says standard configuration"
@@ -67,12 +67,12 @@ else
 fi
 
 # Test 4: Check if run-nginx.sh contains the new logic
-echo "Test 4: Checking run-nginx.sh contains NO_FRONTEND logic"
+echo "Test 4: Checking run-nginx.sh contains API_MODE logic"
 
-if grep -q "NO_FRONTEND" scripts/run-nginx.sh; then
-    echo "✓ run-nginx.sh contains NO_FRONTEND logic"
+if grep -q "API_MODE" scripts/run-nginx.sh; then
+    echo "✓ run-nginx.sh contains API_MODE logic"
 else
-    echo "✗ run-nginx.sh missing NO_FRONTEND logic"
+    echo "✗ run-nginx.sh missing API_MODE logic"
     exit 1
 fi
 
@@ -138,4 +138,4 @@ else
     exit 1
 fi
 
-echo "✓ All tests passed! NO_FRONTEND configuration switching works correctly." 
+echo "✓ All tests passed! API_MODE configuration switching works correctly." 

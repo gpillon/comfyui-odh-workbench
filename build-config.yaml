@@ -108,7 +108,8 @@ comfyui_packages:
     path: "custom_nodes/ComfyUI-Manager"
     enabled: true
   # Add more packages as needed following the same format:
-  # - name: "Package-Name"
-  #   repo: "https://github.com/author/repo.git"
-  #   path: "custom_nodes/Package-Name"
+  # - name: "ComfyUI-HF-Model-Downloader"
+  #   version: "main"
+  #   repo: "https://github.com/ciri/comfyui-model-downloader.git"
+  #   path: "custom_nodes/comfyui-model-downloader"
   #   enabled: true 

@@ -26,7 +26,8 @@ ENV PYTHONUNBUFFERED=1 \
     NGINX_PORT=8888 \
     RUNTIME_FLAGS="" \
     EXTRA_FLAGS="{{ extra_flags|default('') }}" \
-    NO_FRONTEND="false"
+    API_MODE="false" \
+    ENABLE_S3UPLOADER="true"
 
 # Set working directory
 WORKDIR /opt/app-root/src
@@ -45,7 +46,7 @@ RUN dnf update -y && \
     dnf clean all
 
 # Install NGINX configuration
-RUN mkdir -p /opt/app-root/etc/nginx.d /opt/app-root/etc/nginx.default.d /opt/app-root/api/kernels
+RUN mkdir -p /opt/app-root/etc/nginx.d /opt/app-root/api/kernels
 
 # Copy scripts
 COPY scripts/ /opt/app-root/scripts/
@@ -55,6 +56,7 @@ COPY nginx/nginx.conf /opt/app-root/etc/nginx/nginx.conf
 COPY nginx/api/ /opt/app-root/api/
 COPY nginx/pages/ /opt/app-root/etc/nginx/pages/
 COPY supervisord/ /etc/supervisor/conf.d/
+COPY services/ /opt/app-root/services/
 
 # Generate and copy ComfyUI extensions configuration
 COPY build/extensions/comfyui-extensions.json /opt/app-root/etc/comfyui-extensions.json
@@ -79,6 +81,9 @@ RUN mv /opt/app-root/src/ComfyUI /opt/app-root/ComfyUI && \
     chown -R {{ user }}:0 /opt/app-root/ComfyUI && \
     chown -R {{ user }}:0 /opt/app-root/etc/nginx/conf.d
 USER {{ user }}
+
+#install Services dependencies
+RUN pip install flask flask-cors boto3 websocket-client requests websockets
 
 # Install Python dependencies
 {% if custom_packages %}

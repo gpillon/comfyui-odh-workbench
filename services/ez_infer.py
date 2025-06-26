@@ -2,18 +2,77 @@ import requests
 import json
 import uuid
 import websocket
-import threading
-import time
 from flask import Flask, request, jsonify
 import base64
 import urllib.parse
 import random
 import os # Importa il modulo os per accedere alle variabili d'ambiente
+import time # For tracking uptime
 
 app = Flask(__name__)
 
 COMFYUI_API_ADDRESS = "http://127.0.0.1:8188"
 REQUEST_TIMEOUT = 3600
+
+# Track when the application started
+APP_START_TIME = time.time()
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """
+    Endpoint per verificare lo stato del servizio e la connessione a ComfyUI.
+    Restituisce l'uptime corrente e lo stato della connessione a ComfyUI.
+    """
+    current_time = time.time()
+    uptime_seconds = current_time - APP_START_TIME
+    
+    # Convert uptime to human readable format
+    hours = int(uptime_seconds // 3600)
+    minutes = int((uptime_seconds % 3600) // 60)
+    seconds = int(uptime_seconds % 60)
+    uptime_formatted = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+    
+    # Test ComfyUI connection
+    comfyui_status = "unknown"
+    comfyui_error = None
+    
+    try:
+        # Try to reach ComfyUI's system stats endpoint or queue endpoint
+        test_endpoint = f"{COMFYUI_API_ADDRESS}/system_stats"
+        response = requests.get(test_endpoint, timeout=10)
+        if response.status_code == 200:
+            comfyui_status = "connected"
+        else:
+            comfyui_status = "error"
+            comfyui_error = f"HTTP {response.status_code}"
+    except requests.exceptions.ConnectionError:
+        comfyui_status = "disconnected"
+        comfyui_error = "Connection refused"
+    except requests.exceptions.Timeout:
+        comfyui_status = "timeout"
+        comfyui_error = "Request timeout"
+    except Exception as e:
+        comfyui_status = "error"
+        comfyui_error = str(e)
+    
+    health_data = {
+        "status": "healthy",
+        "uptime": {
+            "seconds": round(uptime_seconds, 2),
+            "formatted": uptime_formatted
+        },
+        "comfyui": {
+            "status": comfyui_status,
+            "error": comfyui_error
+        },
+        "service": "ez_infer",
+        "timestamp": current_time
+    }
+    
+    # Return appropriate HTTP status based on ComfyUI connection
+    status_code = 200 if comfyui_status == "connected" else 503
+    
+    return jsonify(health_data), status_code
 
 @app.route('/generate', methods=['POST'])
 def generate_image():

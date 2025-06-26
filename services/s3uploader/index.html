@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComfyUI - S3 Uploader</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #232526 0%, #414345 100%);
+            color: #fff;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            text-align: center;
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #4ecca3;
+        }
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+        }
+        .subtitle {
+            font-size: 1.4rem;
+            color: #4ecca3;
+            margin-bottom: 24px;
+            font-weight: 600;
+        }
+        .description {
+            font-size: 1.1rem;
+            color: #cccccc;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+        .info-section {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            border-left: 4px solid #4ecca3;
+            text-align: left;
+        }
+        .info-item {
+            font-family: 'Courier New', monospace;
+            color: #4ecca3;
+            font-size: 0.9rem;
+            margin: 8px 0;
+            word-break: break-all;
+        }
+        .form-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 24px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4ecca3;
+            font-weight: 600;
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #4ecca3;
+            box-shadow: 0 0 10px rgba(78, 204, 163, 0.3);
+        }
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .button {
+            background: linear-gradient(135deg, #4ecca3 0%, #44a08d 100%);
+            color: #fff;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 8px;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(78, 204, 163, 0.4);
+        }
+        .button:disabled {
+            background: rgba(255, 255, 255, 0.2);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .button-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+        .button-danger:hover {
+            box-shadow: 0 4px 20px rgba(231, 76, 60, 0.4);
+        }
+        .progress-section {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            display: none;
+        }
+        .progress-bar-container {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            height: 20px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background: linear-gradient(135deg, #4ecca3 0%, #44a08d 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+        .progress-text {
+            font-size: 0.9rem;
+            color: #cccccc;
+            margin: 8px 0;
+        }
+        .status-message {
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-weight: 600;
+            display: none;
+        }
+        .status-success {
+            background: rgba(39, 174, 96, 0.2);
+            border: 1px solid #27ae60;
+            color: #2ecc71;
+        }
+        .status-error {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #4ecca3;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .note {
+            font-size: 0.9rem;
+            color: #999;
+            font-style: italic;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">☁️</div>
+        <div class="title">ComfyUI</div>
+        <div class="subtitle">S3 Uploader</div>
+        <div class="description">
+            Upload the contents of your local workspace to S3-compatible storage.
+        </div>
+
+        <!-- S3 Configuration Info -->
+        <div class="info-section">
+            <h3 style="color: #4ecca3; margin-top: 0;">S3 Configuration:</h3>
+            <div id="s3-info">
+                <div class="loading"></div>Loading S3 configuration...
+            </div>
+        </div>
+
+        <!-- Folder Size Info -->
+        <div class="info-section">
+            <h3 style="color: #4ecca3; margin-top: 0;">Source Folder:</h3>
+            <div id="folder-info">
+                <div class="loading"></div>Calculating folder size...
+            </div>
+        </div>
+
+        <!-- Upload Form -->
+        <div class="form-section">
+            <div class="form-group">
+                <label class="form-label" for="subfolder">Target Subfolder in Bucket:</label>
+                <input 
+                    type="text" 
+                    id="subfolder" 
+                    class="form-input" 
+                    placeholder="e.g., /data, /uploads, /workspace"
+                    value="/confyui-model-01"
+                >
+                <div class="note" style="margin-top: 8px;">
+                    Specify the subfolder path where files should be uploaded. Cannot be empty or just "/".
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <button id="upload-btn" class="button" onclick="startUpload()">
+                    Start Upload
+                </button>
+                <button id="cancel-btn" class="button button-danger hidden" onclick="cancelUpload()">
+                    Cancel Upload
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div id="progress-section" class="progress-section">
+            <h3 style="color: #4ecca3; margin-top: 0;">Upload Progress:</h3>
+            <div class="progress-bar-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            <div id="progress-details">
+                <div class="progress-text">
+                    <strong>Files:</strong> <span id="progress-files">0 / 0</span>
+                </div>
+                <div class="progress-text">
+                    <strong>Data:</strong> <span id="progress-data">0 B / 0 B</span>
+                </div>
+                <div class="progress-text">
+                    <strong>Current File:</strong> <span id="current-file">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="status-message" class="status-message">
+        </div>
+
+        <div class="note">
+            Files will be uploaded to the specified subfolder in your configured S3 bucket.
+        </div>
+    </div>
+
+    <script>
+        let uploadProgressInterval = null;
+
+        // Format bytes to human readable format
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Show status message
+        function showStatus(message, isError = false) {
+            const statusEl = document.getElementById('status-message');
+            statusEl.textContent = message;
+            statusEl.className = `status-message ${isError ? 'status-error' : 'status-success'}`;
+            statusEl.style.display = 'block';
+        }
+
+        // Hide status message
+        function hideStatus() {
+            document.getElementById('status-message').style.display = 'none';
+        }
+
+        // Load S3 configuration
+        async function loadS3Config() {
+            const uploadBtn = document.getElementById('upload-btn');
+            
+            try {
+                const response = await fetch('/s3uploader/s3config');
+                const data = await response.json();
+                
+                const infoEl = document.getElementById('s3-info');
+                if (data.success) {
+                    infoEl.innerHTML = `
+                        <div class="info-item">Endpoint: ${data.endpoint}</div>
+                        <div class="info-item">Bucket: ${data.bucket}</div>
+                        <div class="info-item">Region: ${data.region}</div>
+                    `;
+                    // Enable upload button when S3 config is valid
+                    uploadBtn.disabled = false;
+                } else {
+                    infoEl.innerHTML = `<div style="color: #e74c3c;">Error: ${data.error}</div>`;
+                    // Disable upload button when S3 config is invalid
+                    uploadBtn.disabled = true;
+                    uploadBtn.title = "Upload disabled: " + data.error;
+                }
+            } catch (error) {
+                document.getElementById('s3-info').innerHTML = 
+                    `<div style="color: #e74c3c;">Error loading S3 config: ${error.message}</div>`;
+                // Disable upload button when there's an error loading config
+                uploadBtn.disabled = true;
+                uploadBtn.title = "Upload disabled: Failed to load S3 configuration";
+            }
+        }
+
+        // Load folder size information
+        async function loadFolderSize() {
+            try {
+                const response = await fetch('/s3uploader/foldersize');
+                const data = await response.json();
+                
+                const infoEl = document.getElementById('folder-info');
+                if (data.success) {
+                    infoEl.innerHTML = `
+                        <div class="info-item">Path: ${data.folder_path}</div>
+                        <div class="info-item">Size: ${data.size_formatted}</div>
+                        <div class="info-item">Files: ${data.file_count}</div>
+                    `;
+                } else {
+                    infoEl.innerHTML = `<div style="color: #e74c3c;">Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('folder-info').innerHTML = 
+                    `<div style="color: #e74c3c;">Error loading folder info: ${error.message}</div>`;
+            }
+        }
+
+        // Start upload
+        async function startUpload() {
+            const subfolder = document.getElementById('subfolder').value.trim();
+            
+            if (!subfolder || subfolder === '/') {
+                showStatus('Please specify a valid subfolder (cannot be empty or just "/")', true);
+                return;
+            }
+
+            hideStatus();
+            
+            try {
+                const response = await fetch('/s3uploader/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ subfolder: subfolder })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('upload-btn').disabled = true;
+                    document.getElementById('cancel-btn').classList.remove('hidden');
+                    document.getElementById('progress-section').style.display = 'block';
+                    
+                    // Start polling for progress
+                    uploadProgressInterval = setInterval(updateProgress, 1000);
+                } else {
+                    showStatus(data.error, true);
+                }
+            } catch (error) {
+                showStatus(`Upload error: ${error.message}`, true);
+            }
+        }
+
+        // Cancel upload
+        async function cancelUpload() {
+            try {
+                const response = await fetch('/s3uploader/upload/cancel', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus('Upload cancelled', false);
+                    resetUploadUI();
+                } else {
+                    showStatus(data.error, true);
+                }
+            } catch (error) {
+                showStatus(`Cancel error: ${error.message}`, true);
+            }
+        }
+
+        // Update progress
+        async function updateProgress() {
+            try {
+                const response = await fetch('/s3uploader/upload/progress');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const progress = data.progress;
+                    
+                    // Update progress bar
+                    let percentage = 0;
+                    if (progress.total_bytes > 0) {
+                        percentage = (progress.bytes_uploaded / progress.total_bytes) * 100;
+                    }
+                    document.getElementById('progress-bar').style.width = percentage + '%';
+                    
+                    // Update progress details
+                    document.getElementById('progress-files').textContent = 
+                        `${progress.files_processed} / ${progress.total_files}`;
+                    document.getElementById('progress-data').textContent = 
+                        `${formatBytes(progress.bytes_uploaded)} / ${formatBytes(progress.total_bytes)}`;
+                    document.getElementById('current-file').textContent = 
+                        progress.current_file || '-';
+                    
+                    // Check if upload is complete
+                    if (progress.status === 'completed') {
+                        clearInterval(uploadProgressInterval);
+                        showStatus('Upload completed successfully!', false);
+                        resetUploadUI();
+                    } else if (progress.status === 'error') {
+                        clearInterval(uploadProgressInterval);
+                        showStatus(`Upload error: ${progress.error_message}`, true);
+                        resetUploadUI();
+                    } else if (progress.status === 'cancelled') {
+                        clearInterval(uploadProgressInterval);
+                        resetUploadUI();
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating progress:', error);
+            }
+        }
+
+        // Reset upload UI
+        function resetUploadUI() {
+            document.getElementById('upload-btn').disabled = false;
+            document.getElementById('cancel-btn').classList.add('hidden');
+            document.getElementById('progress-section').style.display = 'none';
+            document.getElementById('progress-bar').style.width = '0%';
+            
+            if (uploadProgressInterval) {
+                clearInterval(uploadProgressInterval);
+                uploadProgressInterval = null;
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadS3Config();
+            loadFolderSize();
+        });
+    </script>
+</body>
+</html> 

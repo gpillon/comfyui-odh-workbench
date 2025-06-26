@@ -1,0 +1,55 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  annotations:
+    description: ComfyUI NVIDIA ServingRuntime for KServe in Red Hat OpenShift AI
+    opendatahub.io/apiProtocol: REST
+    opendatahub.io/modelServingSupport: '["single"]'
+    openshift.io/display-name: ComfyUI NVIDIA (ServingRuntime for KServe)
+    openshift.io/provider-display-name: GPillon
+    tags: rhods,rhoai,kserve,servingruntime,comfyui
+    template.openshift.io/documentation-url: https://github.com/gpillon/comfyui-odh-notebook
+    template.openshift.io/long-description: This template defines resources needed
+      to deploy ComfyUI NVIDIA ServingRuntime with KServe in Red Hat OpenShift AI
+  labels:
+    opendatahub.io/dashboard: 'true'
+  name: comfyui-nvidia-runtime-template
+objects:
+- apiVersion: serving.kserve.io/v1alpha1
+  kind: ServingRuntime
+  metadata:
+    annotations:
+      openshift.io/display-name: ComfyUI NVIDIA ServingRuntime for KServe
+    labels:
+      opendatahub.io/dashboard: 'true'
+    name: comfyui-nvidia-runtime
+  spec:
+    annotations: {}
+    containers:
+    - args: []
+      command: []
+      env:
+      - name: NGINX_PORT
+        value: '8080'
+      - name: ENABLE_EZ_INFER
+        value: 'true'
+      - name: API_MODE
+        value: 'true'
+      - name: PYTHONUNBUFFERED
+        value: '1'
+      - name: DEBIAN_FRONTEND
+        value: noninteractive
+      image: ghcr.io/gpillon/comfyui-nvidia:v1.0.2
+      name: kserve-container
+      ports:
+      - containerPort: 8080
+        protocol: TCP
+      resources:
+        limits:
+          nvidia.com/gpu: 1
+        requests:
+          nvidia.com/gpu: 1
+    multiModel: false
+    supportedModelFormats:
+    - autoSelect: true
+      name: ComfyUI

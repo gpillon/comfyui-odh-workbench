@@ -44,6 +44,7 @@ def main():
     parser.add_argument('--variant', help='Specific variant to build (default: all variants)')
     parser.add_argument('--skip-generate', action='store_true', help='Skip generating Containerfiles')
     parser.add_argument('--skip-generate-manifests', action='store_true', help='Skip generating manifests for OpenShift')
+    parser.add_argument('--skip-generate-serving-runtime', action='store_true', help='Skip generating serving runtime templates')
     parser.add_argument('--skip-generate-extensions', action='store_true', help='Skip generating extensions configuration')
     args = parser.parse_args()
     
@@ -68,8 +69,18 @@ def main():
         
     # Generate manifests if requested
     if not args.skip_generate_manifests:
-        generate_manifest_script = Path('build/generate_manifest.py')
+        generate_manifest_script = Path('build/generate_imagestream_manifest.py')
         cmd = [str(generate_manifest_script), '--config', args.config]
+        
+        if args.variant:
+            cmd.extend(['--variant', args.variant])
+        
+        subprocess.run(cmd, check=True)
+    
+    # Generate serving runtime templates if requested
+    if not args.skip_generate_serving_runtime:
+        generate_serving_runtime_script = Path('build/generate_serving_runtime_template.py')
+        cmd = [str(generate_serving_runtime_script), '--config', args.config]
         
         if args.variant:
             cmd.extend(['--variant', args.variant])

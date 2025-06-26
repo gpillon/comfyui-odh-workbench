@@ -247,7 +247,8 @@ jobs:
           if [ -n "$SUCCESSFUL_VARIANTS" ]; then
             for VARIANT in $(echo $SUCCESSFUL_VARIANTS | tr ',' ' '); do
               echo "Generating manifest for $VARIANT"
-              python build/generate_manifest.py --variant $VARIANT
+              python build/generate_imagestream_manifest.py --variant $VARIANT
+              python build/generate_serving_runtime_template.py --variant $VARIANT
             done
           else
             echo "No successful builds to generate manifests for"

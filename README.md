@@ -60,12 +60,16 @@ Follow the OpenDataHub documentation for deploying custom container images.
 
 The container uses the following network configuration:
 
-- Nginx listens on port 8888 and proxies requests to ComfyUI
+- Nginx listens on port `NGINX_PORT` (Default 8888, or 8080 for ServingRuntime) and proxies requests to ComfyUI
 - ComfyUI runs on internal port 8188
 - Nginx provides OpenShift compatibility endpoints at `/api` paths
 - Idle culling support is implemented through the `/api/kernels` endpoint
 
-## File Cleanup (For ServingRuntime)
+## Use as ServingRuntime (AKA API_MODE)
+The container can be run in API-only mode by setting the `API_MODE` (ConfyUI Frontend Disabled) environment variable to `true`. This mode is optimized for use as a ServingRuntime in OpenShift AI, disabling the web UI and only exposing the API endpoints.
+
+
+### File Cleanup (For ServingRuntime)
 
 The container includes an automatic file cleanup system that can be enabled to remove old files from the input and output directories:
 
@@ -86,9 +90,10 @@ export CLEANUP_MAX_AGE_MINUTES=60
 export CLEANUP_INTERVAL_SECONDS
 ```
 
-## Simple Inference Endpoint (For ServingRuntime)
+### Simple Inference Endpoint (For ServingRuntime)
 
 When running as a ServiceRuntime, the container can provide a simple inference endpoint that allows direct workflow execution through HTTP requests. This feature can be enabled by setting the `ENABLE_EZ_INFER` environment variable to `true`.
+
 
 ### Endpoint Usage
 
@@ -151,6 +156,12 @@ The inference endpoint supports the following environment variables:
 - **`INFERENCE_DEBUG`**: Set to `true` to enable debug logging for inference operations (default: `false`)
 - **`INFERENCE_RANDOM_SEED_NODES`**: Set to `true` to automatically randomize seed values in workflows (default: `true`)
 
+### ...why INFERENCE_RANDOM_SEED_NODES ... 
+
+...and not using somethin like `cache size 0` ?
+
+When using the ezinfer endpoint, it's important to note that ComfyUI maintains an internal cache for loaded models and other expensive operations. While you may want to generate different outputs by varying the seed value, completely invalidating the cache on each request would force ComfyUI to reload models and other cached data, significantly impacting performance. This allows ComfyUI to reuse cached models and intermediate results while is forced to generate (unique) outputs through different random seeds every endpoint call.
+
 ### Cache Avoidance
 
 The `INFERENCE_RANDOM_SEED_NODES` environment variable is particularly useful in development environments where you might send the same workflow multiple times. When enabled (default), it automatically modifies any `seed` parameters found in the workflow with random values, preventing ComfyUI from serving cached results. This ensures that each request generates new content even when using identical workflows.
@@ -167,6 +178,61 @@ export ENABLE_EZ_INFER=true
 export INFERENCE_DEBUG=true
 export INFERENCE_RANDOM_SEED_NODES=true
 ```
+
+## S3 Uploader
+
+The container includes an S3 uploader utility that provides a web interface for uploading workspace contents to S3-compatible storage. This feature is useful for the ServingRuntime.
+
+### Accessing the S3 Uploader
+
+The S3 uploader is available at `/s3uploader` when the container is running. For example:
+- Local development: `http://localhost:8888/s3uploader`
+- OpenShift deployment: `https://your-notebook-url/s3uploader`
+
+### Required Environment Variables
+
+Configure S3 connection th the UI when in "Notebook mode" (aka dev mode) or set these environment variables:
+
+```bash
+export AWS_S3_ENDPOINT="https://your-s3-endpoint.com"
+export AWS_ACCESS_KEY_ID="your-access-key"
+export AWS_SECRET_ACCESS_KEY="your-secret-key"
+export AWS_S3_BUCKET="your-bucket-name"
+export AWS_REGION="your-region"  # Optional, defaults to empty
+```
+
+### Optional Configuration
+
+**Exclude Folders from Upload:**
+```bash
+# Space-separated list of folders to exclude (relative to /opt/app-root/src/)
+export S3UPLOADER_EXCLUDE_UPLOAD="temp logs cache build"
+```
+
+### Features
+
+- **Web Interface**: Modern, responsive web UI with real-time progress tracking
+- **Automatic Exclusions**: Hidden folders (starting with `.`) and the `user/` folder are automatically excluded
+- **Custom Exclusions**: Specify additional folders to exclude via environment variable
+- **Progress Tracking**: Real-time upload progress with file count and data transfer metrics
+- **Optimized Transfers**: Uses multipart uploads for large files and concurrent transfers for efficiency
+- **Error Handling**: Graceful error handling with user-friendly messages
+- **Subfolder Support**: Upload to specific subfolders within your S3 bucket
+
+### Usage
+
+2. **Access Web Interface**: Navigate to `https://<confyui-noteebook-url>/s3uploader` in your browser
+3. **Review Configuration**: The interface displays your S3 configuration and folder size
+4. **Specify Subfolder**: Enter the target subfolder path (e.g., `/confyui-model-01`, `/workspace-2024`)
+5. **Start Upload**: Click "Start Upload" to begin the transfer
+6. **Monitor Progress**: Watch real-time progress updates with file and data transfer metrics
+
+### Automatic Exclusions
+
+The following are automatically excluded from uploads:
+- All hidden folders and files (starting with `.`)
+- The `/opt/app-root/src/user/` folder and its contents
+- Folders specified in the `S3UPLOADER_EXCLUDE_UPLOAD` environment variable
 
 ## Building Images
 

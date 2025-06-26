@@ -1,0 +1,35 @@
+# EzInfer service proxy configuration
+location /ezinfer {
+    # Remove the prefix from the request path before forwarding
+    # rewrite ^/ezinfer(.*)$ /generate$1 break;
+
+    if ($request_method = GET) {
+        rewrite ^/ezinfer(.*)$ /health$1 break;
+        proxy_pass http://127.0.0.1:5000;
+    }
+    
+    if ($request_method = POST) {
+        rewrite ^/ezinfer(.*)$ /generate$1 break;
+        proxy_pass http://127.0.0.1:5000;
+    }
+
+    
+    # Proxy to the EzInfer service
+    proxy_pass http://127.0.0.1:5000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    
+    # Increase timeout for long-running image generation
+    proxy_read_timeout 3600s;
+    proxy_connect_timeout 30s;
+    proxy_send_timeout 30s;
+    
+    # Handle larger request bodies for image data
+    client_max_body_size 100M;
+    
+    # Disable proxy buffering for real-time responses
+    proxy_buffering off;
+    proxy_cache off;
+} 
