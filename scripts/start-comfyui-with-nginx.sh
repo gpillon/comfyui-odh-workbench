@@ -5,7 +5,7 @@ set -e
 # Set additional flags based on API_MODE
 if [ "$API_MODE" = "true" ]; then
     # API mode flags
-    ADDITIONAL_FLAGS="--base-directory /mnt/model --database-url sqlite:////tmp/comfyui.db"
+    ADDITIONAL_FLAGS="--base-directory /mnt/models --database-url sqlite:////tmp/comfyui.db"
 else
     # Non-API mode flags (default)
     ADDITIONAL_FLAGS="--base-directory /opt/app-root/src --database-url sqlite:////opt/app-root/src/user/comfyui.db --multi-user"

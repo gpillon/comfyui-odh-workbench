@@ -90,7 +90,7 @@ def get_optimized_transfer_config():
     MB = 1024 ** 2
     
     transfer_config = TransferConfig(
-        multipart_threshold=100 * MB,  # Files larger than 100MB use multipart
+        multipart_threshold=50 * MB,  # Files larger than 50MB use multipart
         max_concurrency=20,           # Increase concurrent transfers
         multipart_chunksize=50 * MB,  # 50MB chunks for multipart uploads
         use_threads=True,             # Enable threading for concurrency

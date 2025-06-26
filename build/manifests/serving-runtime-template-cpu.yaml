@@ -41,7 +41,7 @@ objects:
         value: '1'
       - name: DEBIAN_FRONTEND
         value: noninteractive
-      image: ghcr.io/gpillon/comfyui-cpu:v1.0.2
+      image: ghcr.io/gpillon/comfyui-cpu:v1.0.3
       name: kserve-container
       ports:
       - containerPort: 8080
