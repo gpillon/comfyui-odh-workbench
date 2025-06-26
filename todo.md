@@ -4,6 +4,7 @@
 
 ### 0. Main Project
 - [ ] Remove log message "Cleanup disabled. Set CLEANUP_USER_INPUT_OUTPUT=true to enable."
+- [ ] Enable gzip compression in nginx if not already enabled
 
 ### 1. Enable EZ_INFER in the Project
 - [ ] Modify the project configuration to enable the EZ_INFER functionality
