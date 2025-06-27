@@ -51,6 +51,10 @@ def should_exclude_path(path, source_folder):
     if relative_path.startswith('user' + os.sep) or relative_path == 'user':
         return True
     
+    # Exclude the output folder
+    if relative_path.startswith('output' + os.sep) or relative_path == 'output':
+        return True
+    
     # Exclude folders from environment variable
     exclude_list = os.getenv('S3UPLOADER_EXCLUDE_UPLOAD', '').strip()
     if exclude_list:
@@ -484,4 +488,4 @@ if __name__ == '__main__':
         print("S3 configuration validated successfully")
     
     # Start Flask app
-    app.run(host='0.0.0.0', port=5000, debug=False) 
+    app.run(host='0.0.0.0', port=5001, debug=False) 

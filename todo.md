@@ -6,6 +6,7 @@
  - [ ] cleanup folder (eg. Dont push manifests!)
 
 ### 0. Main Project
+- [ ] !VERY important: endpoint for prometheus metrics! (need custom app, as ComfyUI lacks...)
 - [x] Remove log message "Cleanup disabled. Set CLEANUP_USER_INPUT_OUTPUT=true to enable."
 - [x] Enable gzip compression in nginx if not already enabled
 

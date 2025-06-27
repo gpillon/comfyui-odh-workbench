@@ -7,9 +7,9 @@ if [ "$API_MODE" = "true" ]; then
      mkdir -p /tmp/comfyui
 
     # Copy all folders from ComfyUI except models to /tmp/comfyui
-    cd /opt/app-root/ComfyUI
+    cd /mnt/models
     for item in *; do
-        if [ "$item" != "models" ] && [ -d "$item" ]; then
+        if [ "$item" != "models" ] && [ "$item" != "output" ] && [ -d "$item" ]; then
             cp -r "$item" /tmp/comfyui/
         fi
     done
@@ -30,9 +30,6 @@ if [ "$API_MODE" = "true" ]; then
     echo "  upscale_models: /mnt/models/models/upscale_models/" >> /tmp/comfyui/extra_model_paths.yaml && \
     echo "  vae: /mnt/models/models/vae/" >> /tmp/comfyui/extra_model_paths.yaml && \
     echo "  gligen: /mnt/models/models/gligen/" >> /tmp/comfyui/extra_model_paths.yaml
-
-
-    mkdir -p /tmp/comfyui/user
 
     # API mode flags
     ADDITIONAL_FLAGS="--base-directory /tmp/comfyui --database-url sqlite:///:memory: --extra-model-paths-config /tmp/comfyui/extra_model_paths.yaml"
