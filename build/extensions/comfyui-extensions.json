@@ -5,12 +5,5 @@
     "repo": "https://github.com/ltdrdata/ComfyUI-Manager.git",
     "path": "custom_nodes/ComfyUI-Manager",
     "enabled": true
-  },
-  {
-    "name": "ComfyUI-HF-Model-Downloader",
-    "version": "main",
-    "repo": "https://github.com/ciri/comfyui-model-downloader.git",
-    "path": "custom_nodes/comfyui-model-downloader",
-    "enabled": true
   }
 ]

@@ -2,6 +2,9 @@
 
 ## Tasks for Tomorrow
 
+### -1. Repository
+ - [ ] cleanup folder (eg. Dont push manifests!)
+
 ### 0. Main Project
 - [x] Remove log message "Cleanup disabled. Set CLEANUP_USER_INPUT_OUTPUT=true to enable."
 - [x] Enable gzip compression in nginx if not already enabled
@@ -20,8 +23,8 @@
 - [x] Implement functionality to upload the entire development folder content to S3
 - [ ] Add proper authentication/security errors for the development endpoint
 - [ ] Consider compression options for efficient folder uploads
-- [ ] Add configuration for S3 bucket settings (credentials, region, bucket name)
-- [ ] Test the upload functionality with various file types and folder structures
+- [x] Add configuration for S3 bucket settings (credentials, region, bucket name)
+- [x] Test the upload functionality with various file types and folder structures
 - [ ] Document the new endpoint usage and configuration requirements
 
 ## Notes
@@ -31,10 +34,9 @@
 
 ### 3. Improve API_MODE Endpoints Documentation
 - [ ] Document all available API_MODE endpoints in the README.md
-- [ ] Add examples for each endpoint with request/response formats
-- [ ] Include authentication requirements if any
-- [ ] Document query parameters and request body schemas
-- [ ] Add troubleshooting section for common API usage issues
+- [ ] !important Add troubleshooting section for common API usage issues
+- [ ] Add examples for each endpoint (at least most important EPs) with request (response?) formats
+- [ ] Document query parameters and request body schemas (Swagger?)
 - [ ] Consider creating an OpenAPI/Swagger specification for better API documentation
 - [ ] Include ezinfer image return handling in swagger documentation
 
