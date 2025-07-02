@@ -102,21 +102,20 @@ USER 1001
 
 # # Create extra_model_paths.yaml to point to the correct directories
 # RUN echo "comfyui:" > /opt/app-root/ComfyUI/extra_model_paths.yaml && \
-#     echo "  base_path: /opt/app-root/src/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
-#     echo "  is_default: true" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
-#     echo "  checkpoints: /opt/app-root/src/models/checkpoints/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
-#     echo "  clip: /opt/app-root/src/models/clip/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
-#     echo "  clip_vision: /opt/app-root/src/models/clip_vision/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
-#     echo "  configs: /opt/app-root/src/models/configs/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
-#     echo "  controlnet: /opt/app-root/src/models/controlnet/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+#     echo "  is_default: false" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+#     echo "  checkpoints: /mnt/models/models/checkpoints/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+#     echo "  clip: /mnt/models/models/clip/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+#     echo "  clip_vision: /mnt/models/models/clip_vision/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+#     echo "  configs: /mnt/models/models/configs/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+#     echo "  controlnet: /mnt/models/models/controlnet/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
 #     echo "  diffusion_models: |" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
-#     echo "    /opt/app-root/src/models/diffusion_models" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
-#     echo "    /opt/app-root/src/models/unet" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
-#     echo "  embeddings: /opt/app-root/src/models/embeddings/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
-#     echo "  loras: /opt/app-root/src/models/loras/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
-#     echo "  upscale_models: /opt/app-root/src/models/upscale_models/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
-#     echo "  vae: /opt/app-root/src/models/vae/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
-#     echo "  gligen: /opt/app-root/src/models/gligen/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml
+#     echo "    /mnt/models/models/diffusion_models" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+#     echo "    /mnt/models/models/unet" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+#     echo "  embeddings: /mnt/models/models/embeddings/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+#     echo "  loras: /mnt/models/models/loras/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+#     echo "  upscale_models: /mnt/models/models/upscale_models/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+#     echo "  vae: /mnt/models/models/vae/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml && \
+#     echo "  gligen: /mnt/models/models/gligen/" >> /opt/app-root/ComfyUI/extra_model_paths.yaml
 
 # Fix permissions for OpenShift
 USER root

@@ -88,7 +88,6 @@ def generate_image():
     if not workflow:
         return jsonify({"error": "Workflow JSON cannot be empty"}), 400
 
-    # ----- INIZIO MODIFICA PER IL SEED CON CONDIZIONE ENV VAR -----
     # Controlla la variabile d'ambiente RANDOM_SEED_NODES
     random_seed_enabled = os.getenv("INFERENCE_RANDOM_SEED_NODES", "true").lower() == "true"
     print(f"DEBUG: RANDOM_SEED_NODES è impostato a: {random_seed_enabled}")
@@ -98,25 +97,31 @@ def generate_image():
         for node_id, node_data in workflow.items():
             if isinstance(node_data, dict) and "inputs" in node_data:
                 inputs = node_data["inputs"]
+                
+                # Controlla e aggiorna il campo "seed"
                 if "seed" in inputs:
-                    # Genera un nuovo seed casuale
                     new_seed = random.randint(0, 0xFFFFFFFFFFFFFFFF) # Un grande numero per seed
                     inputs["seed"] = new_seed
                     seed_found_and_updated = True
                     print(f"DEBUG: Aggiornato seed nel nodo {node_id} a: {new_seed}")
-                    
-                    # Se c'è anche un campo 'control_after_generate' nel KSampler, impostalo su 'randomize' o 'increment'
-                    if "control_after_generate" in inputs:
-                        inputs["control_after_generate"] = "randomize"
-                        print(f"DEBUG: Impostato control_after_generate nel nodo {node_id} a 'randomize'")
-                    break # Assumiamo che ci sia solo un nodo KSampler con seed da modificare
-        
+  
+                # Controlla e aggiorna il campo "noise_seed"
+                if "noise_seed" in inputs:
+                    new_noise_seed = random.randint(0, 0xFFFFFFFFFFFFFFFF) # Un grande numero per noise_seed
+                    inputs["noise_seed"] = new_noise_seed
+                    seed_found_and_updated = True
+                    print(f"DEBUG: Aggiornato noise_seed nel nodo {node_id} a: {new_noise_seed}")
+
+                # Se c'è anche un campo 'control_after_generate' nel KSampler, impostalo su 'randomize' o 'increment'
+                if "control_after_generate" in inputs:
+                    inputs["control_after_generate"] = "randomize"
+                    print(f"DEBUG: Impostato control_after_generate nel nodo {node_id} a 'randomize'")
+               
         if not seed_found_and_updated:
-            print("WARN: RANDOM_SEED_NODES è TRUE ma nessun campo 'seed' valido trovato nel workflow. ComfyUI potrebbe servire dalla cache.")
+            print("WARN: RANDOM_SEED_NODES è TRUE ma nessun campo 'seed' o 'noise_seed' valido trovato nel workflow. ComfyUI potrebbe servire dalla cache.")
     else:
         print("DEBUG: RANDOM_SEED_NODES non è TRUE. Il seed nel workflow non verrà modificato automaticamente.")
-    # ----- FINE MODIFICA PER IL SEED CON CONDIZIONE ENV VAR -----
-
+    
     client_id = str(uuid.uuid4())
     prompt_endpoint = f"{COMFYUI_API_ADDRESS}/prompt"
     websocket_address = f"{COMFYUI_API_ADDRESS.replace('http', 'ws')}/ws?clientId={client_id}"

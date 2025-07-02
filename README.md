@@ -1,6 +1,6 @@
 # ComfyUI for OpenDataHub
 
-This repository contains a dynamic builder for ComfyUI images optimized for OpenDataHub on OpenShift AI.
+This repository contains a dynamic builder for ComfyUI images optimized for [OpenDataHub](https://opendatahub.com/) or [Red Hat OpenShift AI](https://www.redhat.com/en/products/ai/openshift-ai).
 
 ## TL;DR
 
@@ -17,7 +17,7 @@ oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1
 # AMD GPU (still WIP)
 oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.1/imagestream-amd.yaml -n redhat-ods-applications
 ```
-And then create the Notebook in your workspace using the custom image.
+And then create the Workbench in your workspace using the custom image.
 
 ## Overview
 
@@ -187,11 +187,11 @@ The container includes an S3 uploader utility that provides a web interface for 
 
 The S3 uploader is available at `/s3uploader` when the container is running. For example:
 - Local development: `http://localhost:8888/s3uploader`
-- OpenShift deployment: `https://your-notebook-url/s3uploader`
+- OpenShift deployment: `https://your-workbench-url/s3uploader`
 
 ### Required Environment Variables
 
-Configure S3 connection th the UI when in "Notebook mode" (aka dev mode) or set these environment variables:
+Configure S3 connection th the UI when in "Workbench mode" (aka dev mode) or set these environment variables:
 
 ```bash
 export AWS_S3_ENDPOINT="https://your-s3-endpoint.com"
