@@ -12,4 +12,4 @@
 test-mnt-data/
 
 build/manifests/*.yaml
-build/containerfiles/*.yaml
+build/containerfiles/Containerfile*

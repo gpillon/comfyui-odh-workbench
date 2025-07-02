@@ -75,7 +75,7 @@ def generate_serving_runtime_template(variant, config, output_path):
                                     "value": "false"
                                 }
                             ],
-                            "image": f"{registry}/{repository}-{variant['name']}:{tag}",
+                            "image": f"{registry}/{repository}:{tag}-{variant['name']}",
                             "name": "kserve-container",
                             "ports": [
                                 {

@@ -121,7 +121,7 @@ def generate_manifest(variant, config, output_path):
         },
         "from": {
             "kind": "DockerImage",
-            "name": f"{registry}/{repository}-{variant['name']}:{tag}"
+            "name": f"{registry}/{repository}:{tag}-{variant['name']}"
         },
         "name": tag,
         "referencePolicy": {

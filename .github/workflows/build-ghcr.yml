@@ -177,24 +177,24 @@ jobs:
           
           # Image tags for GHCR
           IMAGE_TAGS=(
-            "${REGISTRY}/${REPO}-${NAME}:${TAG}"
-            "${REGISTRY}/${REPO}-${NAME}:${VERSION}"
+            "${REGISTRY}/${REPO}:${TAG}-${NAME}"
+            "${REGISTRY}/${REPO}:${VERSION}-${NAME}"
           )
           
           # Image tags for Quay
           QUAY_REPO="${{ vars.QUAY_REPO }}"
           if [ -n "$QUAY_REPO" ]; then
             IMAGE_TAGS+=(
-              "quay.io/${QUAY_REPO}-${NAME}:${TAG}"
-              "quay.io/${QUAY_REPO}-${NAME}:${VERSION}"
+              "quay.io/${QUAY_REPO}:${TAG}-${NAME}"
+              "quay.io/${QUAY_REPO}:${VERSION}-${NAME}"
             )
           fi
           
           # If this is the latest version, add latest tag for both registries
           if [ "$VERSION" == "latest" ]; then
-            IMAGE_TAGS+=("${REGISTRY}/${REPO}-${NAME}:latest")
+            IMAGE_TAGS+=("${REGISTRY}/${REPO}:latest-${NAME}")
             if [ -n "$QUAY_REPO" ]; then
-              IMAGE_TAGS+=("quay.io/${QUAY_REPO}-${NAME}:latest")
+              IMAGE_TAGS+=("quay.io/${QUAY_REPO}:latest-${NAME}")
             fi
           fi
           
