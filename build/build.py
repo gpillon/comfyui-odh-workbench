@@ -104,7 +104,7 @@ def main():
         tag = variant['tag']
         
         # Full image name
-        image_tag = f"{registry}/{repository}-{name}:{tag}"
+        image_tag = f"{registry}/{repository}:{tag}-{name}"
         
         # Containerfile path
         containerfile = f"build/containerfiles/Containerfile.{name}"

@@ -1,15 +1,15 @@
-FROM {{ base_image }}
+FROM registry.access.redhat.com/ubi9/python-311
 
 LABEL maintainer="gpillon" \
-      name="comfyui-{{ name }}" \
-      summary="ComfyUI {{ name }} image for AI image generation" \
-      description="{{ description }}" \
-      io.k8s.display-name="ComfyUI {{ name }} image" \
-      io.k8s.description="{{ description }}" \
-      authoritative-source-url="{{ comfyui_repo }}" \
-      io.openshift.build.commit.ref="{{ comfyui_version }}" \
-      io.openshift.build.source-location="{{ comfyui_repo }}" \
-      io.openshift.build.image="ghcr.io/gpillon/comfyui-{{ name }}:{{ tag }}"
+      name="comfyui-cpu" \
+      summary="ComfyUI cpu image for AI image generation" \
+      description="ComfyUI with CPU support only" \
+      io.k8s.display-name="ComfyUI cpu image" \
+      io.k8s.description="ComfyUI with CPU support only" \
+      authoritative-source-url="https://github.com/comfyanonymous/ComfyUI.git" \
+      io.openshift.build.commit.ref="v0.3.41" \
+      io.openshift.build.source-location="https://github.com/comfyanonymous/ComfyUI.git" \
+      io.openshift.build.image="ghcr.io/gpillon/comfyui-cpu:v1.0.4"
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -25,7 +25,7 @@ ENV PYTHONUNBUFFERED=1 \
     NB_PREFIX="/notebook/default/default" \
     NGINX_PORT=8888 \
     RUNTIME_FLAGS="" \
-    EXTRA_FLAGS="{{ extra_flags|default('') }}" \
+    EXTRA_FLAGS="--cpu" \
     API_MODE="false" \
     ENABLE_S3UPLOADER="true"
 
@@ -39,46 +39,32 @@ RUN dnf update -y && \
     dnf install -y --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm && \
     dnf install -y --nogpgcheck https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm && \
     dnf install -y --allowerasing \
-    {% for package in os_packages %}
-    {% if package|trim %}{{ package }}{% if not loop.last %} \{% endif %}{% endif %}
-    {% endfor %} \
+gcc \gcc-c++ \make \curl \git \mesa-libGL \glib2 \libSM \libXext \python3-devel \wget \
     nginx supervisor fcgiwrap && \
     dnf clean all
 
 # Install NGINX configuration
 RUN mkdir -p /opt/app-root/etc/nginx.d /opt/app-root/api/kernels && \
-    chown -R {{ user }}:0 /opt/app-root/src/ && \
+    chown -R 1001:0 /opt/app-root/src/ && \
     chmod -R g+rwX /opt/app-root/src/
-USER {{ user }}
+USER 1001
 
 # Clone ComfyUI repository
-RUN git clone {{ comfyui_repo }} /opt/app-root/src/ComfyUI
+RUN git clone https://github.com/comfyanonymous/ComfyUI.git /opt/app-root/src/ComfyUI
 USER root
 RUN mv /opt/app-root/src/ComfyUI /opt/app-root/ComfyUI && \
-    chown -R {{ user }}:0 /opt/app-root/ComfyUI
-USER {{ user }}
+    chown -R 1001:0 /opt/app-root/ComfyUI
+USER 1001
 
 #install Services dependencies
 RUN pip install flask flask-cors boto3 websocket-client requests websockets
 
 # Install Python dependencies
-{% if custom_packages %}
 RUN pip install --no-cache-dir \
-    {% for package in python_packages %}
-    {% if package|trim %}{{ package }}{% if not loop.last %} \{% endif %}{% endif %}
-    {% endfor %} \
-    {% for package in custom_packages %}
-    {% if package|trim %}{{ package }}{% if not loop.last %} \{% endif %}{% endif %}
-    {% endfor %}
-{% else %}
-RUN pip install --no-cache-dir \
-    {% for package in python_packages %}
-    {% if package|trim %}{{ package }}{% if not loop.last %} \{% endif %}{% endif %}
-    {% endfor %}
-{% endif %}
-
+pyaml==25.5.0 \
+torch==2.7.1+cpu \torchvision==0.22.1+cpu \torchaudio==2.7.1+cpu \torchsde==0.2.6 \--extra-index-url https://download.pytorch.org/whl/cpu
 RUN cd /opt/app-root/ComfyUI && \
-    git checkout {{ comfyui_version }} && \
+    git checkout v0.3.41 && \
     pip install --upgrade pip && \
     pip install --upgrade setuptools && \
     pip install gitpython && \
@@ -87,9 +73,9 @@ RUN cd /opt/app-root/ComfyUI && \
 
 # set permissions for ComfyUI
 USER root
-RUN chown -R {{ user }}:0 /opt/app-root/ComfyUI/custom_nodes && \
+RUN chown -R 1001:0 /opt/app-root/ComfyUI/custom_nodes && \
     chmod -R g+rwX /opt/app-root/ComfyUI/custom_nodes
-USER {{ user }}
+USER 1001
 
 # # Create extra_model_paths.yaml to point to the correct directories
 # RUN echo "comfyui:" > /opt/app-root/ComfyUI/extra_model_paths.yaml && \
@@ -129,25 +115,25 @@ COPY build/extensions/comfyui-extensions.json /opt/app-root/etc/comfyui-extensio
 
 RUN chmod +x /opt/app-root/scripts/*.sh && \
     chmod +x /opt/app-root/api/kernels/access.cgi && \
-    chown -R {{ user }}:0 /opt/app-root/src && \
-    chown -R {{ user }}:0 /opt/app-root/api && \
+    chown -R 1001:0 /opt/app-root/src && \
+    chown -R 1001:0 /opt/app-root/api && \
     mkdir -p /var/log/nginx /var/lib/nginx /var/run && \
-    chown -R {{ user }}:0 /var/log/nginx /var/lib/nginx /var/run && \
+    chown -R 1001:0 /var/log/nginx /var/lib/nginx /var/run && \
     chmod -R g+rwX /var/log/nginx /var/lib/nginx /var/run && \
     chmod -R ug+rwX /opt/app-root/etc/nginx/conf.d && \
     chmod -R ug+rwX /opt/app-root/etc/nginx/extra && \
-    chown -R {{ user }}:0 /opt/app-root/etc/nginx/conf.d && \
-    chown -R {{ user }}:0 /opt/app-root/etc/nginx/extra
+    chown -R 1001:0 /opt/app-root/etc/nginx/conf.d && \
+    chown -R 1001:0 /opt/app-root/etc/nginx/extra
 
 # Switch to non-root user for remaining operations
-USER {{ user }}
+USER 1001
 
 # Define volumes
 VOLUME /opt/app-root/src/models
 VOLUME /opt/app-root/ComfyUI/custom_nodes
 
 # Expose ports
-EXPOSE {{ port }}
+EXPOSE 8888
 EXPOSE 8888
 
 # Set entrypoint
