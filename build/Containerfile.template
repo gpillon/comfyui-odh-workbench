@@ -48,38 +48,13 @@ RUN dnf update -y && \
 # Install NGINX configuration
 RUN mkdir -p /opt/app-root/etc/nginx.d /opt/app-root/api/kernels
 
-# Copy scripts
-COPY scripts/ /opt/app-root/scripts/
-COPY nginx/conf.d/ /opt/app-root/etc/nginx/conf.d/
-COPY nginx/extra/ /opt/app-root/etc/nginx/extra/
-COPY nginx/nginx.conf /opt/app-root/etc/nginx/nginx.conf
-COPY nginx/api/ /opt/app-root/api/
-COPY nginx/pages/ /opt/app-root/etc/nginx/pages/
-COPY supervisord/ /etc/supervisor/conf.d/
-COPY services/ /opt/app-root/services/
-
-# Generate and copy ComfyUI extensions configuration
-COPY build/extensions/comfyui-extensions.json /opt/app-root/etc/comfyui-extensions.json
-
-RUN chmod +x /opt/app-root/scripts/*.sh && \
-    chmod +x /opt/app-root/api/kernels/access.cgi && \
-    chown -R {{ user }}:0 /opt/app-root/src && \
-    chown -R {{ user }}:0 /opt/app-root/api && \
-    mkdir -p /var/log/nginx /var/lib/nginx /var/run && \
-    chown -R {{ user }}:0 /var/log/nginx /var/lib/nginx /var/run && \
-    chmod -R g+rwX /var/log/nginx /var/lib/nginx /var/run && \
-    chmod -R ug+rwX /opt/app-root/etc/nginx/conf.d && \
-    chmod -R ug+rwX /opt/app-root/etc/nginx/extra
-
-# Switch to non-root user for remaining operations
 USER {{ user }}
 
 # Clone ComfyUI repository
 RUN git clone {{ comfyui_repo }} /opt/app-root/src/ComfyUI
 USER root
 RUN mv /opt/app-root/src/ComfyUI /opt/app-root/ComfyUI && \
-    chown -R {{ user }}:0 /opt/app-root/ComfyUI && \
-    chown -R {{ user }}:0 /opt/app-root/etc/nginx/conf.d
+    chown -R {{ user }}:0 /opt/app-root/ComfyUI
 USER {{ user }}
 
 #install Services dependencies
@@ -111,7 +86,8 @@ RUN cd /opt/app-root/ComfyUI && \
 
 # set permissions for ComfyUI
 USER root
-RUN chown -R {{ user }}:0 /opt/app-root/ComfyUI/custom_nodes
+RUN chown -R {{ user }}:0 /opt/app-root/ComfyUI/custom_nodes && \
+    chmod -R g+rwX /opt/app-root/ComfyUI/custom_nodes
 USER {{ user }}
 
 # # Create extra_model_paths.yaml to point to the correct directories
@@ -137,6 +113,32 @@ RUN find /opt/app-root/ComfyUI -type d -exec chmod 775 {} \; && \
     find /opt/app-root/ComfyUI -type f -exec chmod 664 {} \; && \
     chmod +x /opt/app-root/ComfyUI/main.py
 
+# Copy scripts
+COPY scripts/ /opt/app-root/scripts/
+COPY nginx/conf.d/ /opt/app-root/etc/nginx/conf.d/
+COPY nginx/extra/ /opt/app-root/etc/nginx/extra/
+COPY nginx/nginx.conf /opt/app-root/etc/nginx/nginx.conf
+COPY nginx/api/ /opt/app-root/api/
+COPY nginx/pages/ /opt/app-root/etc/nginx/pages/
+COPY supervisord/ /etc/supervisor/conf.d/
+COPY services/ /opt/app-root/services/
+
+# Generate and copy ComfyUI extensions configuration
+COPY build/extensions/comfyui-extensions.json /opt/app-root/etc/comfyui-extensions.json
+
+RUN chmod +x /opt/app-root/scripts/*.sh && \
+    chmod +x /opt/app-root/api/kernels/access.cgi && \
+    chown -R {{ user }}:0 /opt/app-root/src && \
+    chown -R {{ user }}:0 /opt/app-root/api && \
+    mkdir -p /var/log/nginx /var/lib/nginx /var/run && \
+    chown -R {{ user }}:0 /var/log/nginx /var/lib/nginx /var/run && \
+    chmod -R g+rwX /var/log/nginx /var/lib/nginx /var/run && \
+    chmod -R ug+rwX /opt/app-root/etc/nginx/conf.d && \
+    chmod -R ug+rwX /opt/app-root/etc/nginx/extra && \
+    chown -R {{ user }}:0 /opt/app-root/etc/nginx/conf.d && \
+    chown -R {{ user }}:0 /opt/app-root/etc/nginx/extra
+
+# Switch to non-root user for remaining operations
 USER {{ user }}
 
 # Define volumes

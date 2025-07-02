@@ -6,6 +6,12 @@ set -e
 USER_SITE_PACKAGES="/opt/app-root/src/.local/lib/python3.11/site-packages"
 mkdir -p "$USER_SITE_PACKAGES"
 
+# Generate uuid tmp file
+UUID_FILE="/tmp/comfyui_uuid"
+if [ ! -f "$UUID_FILE" ]; then
+    echo "$(uuidgen)" > "$UUID_FILE"
+fi
+
 # Copy existing packages from system site-packages to user site-packages if not already done
 COPY_MARKER="/opt/app-root/src/.packages_copied"
 if [ ! -f "$COPY_MARKER" ]; then
@@ -41,23 +47,37 @@ EOF
 
 # Create model subdirectories in the mounted volume
 echo "Creating model directories..."
-mkdir -p /opt/app-root/src/models/checkpoints \
-    /opt/app-root/src/models/clip \
-    /opt/app-root/src/models/clip_vision \
-    /opt/app-root/src/models/configs \
-    /opt/app-root/src/models/controlnet \
-    /opt/app-root/src/models/diffusion_models \
-    /opt/app-root/src/models/unet \
-    /opt/app-root/src/models/embeddings \
-    /opt/app-root/src/models/loras \
-    /opt/app-root/src/models/upscale_models \
-    /opt/app-root/src/models/vae \
-    /opt/app-root/src/models/gligen \
-    /opt/app-root/src/models/vae_approx \
-    /opt/app-root/src/custom_nodes \
-    /opt/app-root/src/user \
-    /opt/app-root/src/input \
-    /opt/app-root/src/output
+
+# Array of directories to create
+MODEL_DIRS=(
+    "/opt/app-root/src/models/checkpoints"
+    "/opt/app-root/src/models/clip"
+    "/opt/app-root/src/models/clip_vision"
+    "/opt/app-root/src/models/configs"
+    "/opt/app-root/src/models/controlnet"
+    "/opt/app-root/src/models/diffusion_models"
+    "/opt/app-root/src/models/unet"
+    "/opt/app-root/src/models/embeddings"
+    "/opt/app-root/src/models/loras"
+    "/opt/app-root/src/models/upscale_models"
+    "/opt/app-root/src/models/vae"
+    "/opt/app-root/src/models/gligen"
+    "/opt/app-root/src/models/vae_approx"
+    "/opt/app-root/src/custom_nodes"
+    "/opt/app-root/src/user"
+    "/opt/app-root/src/input"
+    "/opt/app-root/src/output"
+)
+
+# Create directories if they don't exist
+for dir in "${MODEL_DIRS[@]}"; do
+    if [ ! -d "$dir" ]; then
+        echo "Creating directory: $dir"
+        mkdir -p "$dir"
+    else
+        echo "Directory already exists: $dir"
+    fi
+done
 
 # Change to the ComfyUI directory
 cd /opt/app-root/src
@@ -124,27 +144,30 @@ chmod 644 "$STARTUP_LOG"
 # Create a startup complete marker after ComfyUI is ready
 # We'll use a background process to check the /prompt endpoint
 # and create the marker when it's available
-(
+{
     # Initialize counter for timeout
     COUNTER=0
     MAX_WAIT=600  # 10 minutes timeout
     
-    echo "Waiting for ComfyUI to be ready..." | tee -a "$STARTUP_LOG"
+    echo "$(date): Starting ComfyUI readiness check..." >> "$STARTUP_LOG"
+    echo "$(date): Starting ComfyUI readiness check..."
     
     # Loop until we get a successful response or timeout
     while [ $COUNTER -lt $MAX_WAIT ]; do
         # Check if ComfyUI /prompt endpoint is responding
-        HTTP_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8188/prompt)
+        HTTP_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8188/prompt 2>/dev/null || echo "000")
+        
+        echo "$(date): Checking ComfyUI... Counter: $COUNTER seconds, HTTP response: $HTTP_RESPONSE" >> "$STARTUP_LOG"
         
         # If we get 200 OK or 405 Method Not Allowed (expected for GET on /prompt), mark as ready
-        if [ "$HTTP_RESPONSE" -eq 200 ] || [ "$HTTP_RESPONSE" -eq 405 ]; then
+        if [ "$HTTP_RESPONSE" = "200" ] || [ "$HTTP_RESPONSE" = "405" ]; then
             touch /tmp/.startup_complete
-            echo "ComfyUI is ready! Startup complete marker created." | tee -a "$STARTUP_LOG"
+            echo "$(date): ComfyUI is ready! Startup complete marker created." >> "$STARTUP_LOG"
+            echo "$(date): ComfyUI is ready! Startup complete marker created."
             break
         fi
         
         # Increment counter and sleep
-        echo "Waiting for ComfyUI to be ready... $COUNTER seconds, response: $HTTP_RESPONSE" | tee -a "$STARTUP_LOG"
         COUNTER=$((COUNTER + 5))
         sleep 5
     done
@@ -152,9 +175,10 @@ chmod 644 "$STARTUP_LOG"
     # If we timed out, still create the marker but log a warning
     if [ $COUNTER -ge $MAX_WAIT ]; then
         touch /tmp/.startup_complete
-        echo "WARNING: Timed out waiting for ComfyUI to be ready after ${MAX_WAIT} seconds. Creating marker anyway." | tee -a "$STARTUP_LOG"
+        echo "$(date): WARNING: Timed out waiting for ComfyUI after ${MAX_WAIT} seconds. Creating marker anyway." >> "$STARTUP_LOG"
+        echo "$(date): WARNING: Timed out waiting for ComfyUI after ${MAX_WAIT} seconds. Creating marker anyway."
     fi
-) > /dev/stdout 2>&1 &
+} &
 
 # Print the log file path for reference
 echo "Startup progress is being logged to $STARTUP_LOG"

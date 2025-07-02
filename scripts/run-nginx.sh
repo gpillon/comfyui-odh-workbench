@@ -6,8 +6,8 @@ set -e
 mkdir -p /tmp/log/nginx
 
 # Initialize access logs for culling with current time
-CURRENT_TIME=$(date -Iseconds)
-echo '[{"id":"comfyui","name":"comfyui","last_activity":"'$CURRENT_TIME'","execution_state":"idle","connections":1}]' > /tmp/log/nginx/comfyui.access.log
+# CURRENT_TIME=$(date -Iseconds)
+# echo '[{"id":"comfyui","name":"comfyui","last_activity":"'$CURRENT_TIME'","execution_state":"idle","connections":1}]' > /tmp/log/nginx/comfyui.access.log
 
 # Check if API_MODE environment variable is set to enable API-only mode
 if [ "${API_MODE}" = "true" ]; then

@@ -19,22 +19,22 @@ location ${NB_PREFIX}/api {
 
 # Required for idle culling
 location ${NB_PREFIX}/api/kernels {
-    return 302 $custom_scheme://$http_host/api/kernels/;
-    access_log off;
-}
-
-location ${NB_PREFIX}/api/kernels/ {
-    return 302 $custom_scheme://$http_host/api/kernels/;
-    access_log off;
-}
-
-location /api/kernels/ {
     index access.cgi;
     fastcgi_index access.cgi;
     include /etc/nginx/fastcgi_params;
     fastcgi_param SCRIPT_FILENAME /opt/app-root/api/kernels/access.cgi;
     fastcgi_pass unix:/var/run/fcgiwrap.socket;
     gzip off;
+    access_log off;
+}
+
+location ${NB_PREFIX}/api/kernels/ {
+    return 302 $custom_scheme://$http_host${NB_PREFIX}/api/kernels;
+    access_log off;
+}
+
+location /api/kernels {
+    return 302 $custom_scheme://$http_host/api/kernels;
     access_log off;
 }
 

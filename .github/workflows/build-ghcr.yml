@@ -120,6 +120,24 @@ jobs:
           name: containerfiles
           path: build/containerfiles/
 
+      - name: Clean up old caches
+        continue-on-error: true
+        run: |
+          # Clean up caches older than 7 days to prevent hitting GitHub's 10GB cache limit
+          gh extension install actions/gh-actions-cache || true
+          
+          # List and delete old caches for this variant
+          VARIANT_NAME="${{ matrix.variant.name }}"
+          echo "Cleaning up old caches for variant: $VARIANT_NAME"
+          
+          # Get caches older than 7 days for this scope
+          gh actions-cache list --key "*$VARIANT_NAME*" --limit 100 | \
+          awk '$3 ~ /^[7-9][0-9]+d|^[0-9]{3,}d/ {print $1}' | \
+          head -20 | \
+          xargs -I {} gh actions-cache delete {} --confirm || true
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -129,6 +147,13 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to Quay
+        uses: docker/login-action@v2
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_ROBOT_USER }}
+          password: ${{ secrets.QUAY_ROBOT_TOKEN }}
 
       - name: Extract build configuration
         id: config
@@ -150,22 +175,39 @@ jobs:
           TAG="${{ matrix.variant.tag }}"
           VERSION="${{ needs.prepare.outputs.version }}"
           
-          # Image tags
+          # Image tags for GHCR
           IMAGE_TAGS=(
             "${REGISTRY}/${REPO}-${NAME}:${TAG}"
             "${REGISTRY}/${REPO}-${NAME}:${VERSION}"
           )
           
-          # If this is the latest version, add latest tag
-          if [ "$VERSION" == "latest" ]; then
-            IMAGE_TAGS+=("${REGISTRY}/${REPO}-${NAME}:latest")
+          # Image tags for Quay
+          QUAY_REPO="${{ vars.QUAY_REPO }}"
+          if [ -n "$QUAY_REPO" ]; then
+            IMAGE_TAGS+=(
+              "quay.io/${QUAY_REPO}-${NAME}:${TAG}"
+              "quay.io/${QUAY_REPO}-${NAME}:${VERSION}"
+            )
           fi
           
-          # Build Docker command
+          # If this is the latest version, add latest tag for both registries
+          if [ "$VERSION" == "latest" ]; then
+            IMAGE_TAGS+=("${REGISTRY}/${REPO}-${NAME}:latest")
+            if [ -n "$QUAY_REPO" ]; then
+              IMAGE_TAGS+=("quay.io/${QUAY_REPO}-${NAME}:latest")
+            fi
+          fi
+          
+          # Build Docker command with multi-tier caching
+          CACHE_IMAGE="${REGISTRY}/${REPO}-${NAME}-cache"
           DOCKER_CMD=(
             "docker" "buildx" "build"
             "--platform" "linux/amd64"
             "--push"
+            "--cache-from" "type=gha,scope=${NAME}"
+            "--cache-from" "type=registry,ref=${CACHE_IMAGE}:cache"
+            "--cache-to" "type=gha,mode=max,scope=${NAME}"
+            "--cache-to" "type=registry,ref=${CACHE_IMAGE}:cache,mode=max"
           )
           
           # Add tags
@@ -177,8 +219,15 @@ jobs:
           DOCKER_CMD+=("-f" "build/containerfiles/Containerfile.${NAME}" ".")
           
           # Execute build
-          echo "Building and pushing ${NAME}..."
+          echo "Building and pushing ${NAME} with caching..."
+          echo "Cache sources:"
+          echo "  - GitHub Actions cache: scope=${NAME}"
+          echo "  - Registry cache: ${CACHE_IMAGE}:cache"
           echo "Command: ${DOCKER_CMD[*]}"
+          
+          # Enable buildkit debug output for cache visibility
+          export BUILDKIT_PROGRESS=plain
+          
           "${DOCKER_CMD[@]}"
       
       - name: Set build status
