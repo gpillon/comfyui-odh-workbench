@@ -6,16 +6,16 @@ This repository contains a dynamic builder for ComfyUI images optimized for [Ope
 
 ```bash
 # Nvidia GPU
-oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.1/imagestream-nvidia.yaml -n redhat-ods-applications
+oc apply -f https://github.com/gpillon/comfyui-odh-workbench/releases/download/v1.0.4/imagestream-nvidia.yaml -n redhat-ods-applications
 
 # CPU Only (recommended for testing purposes only)
-oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.1/imagestream-cpu.yaml -n redhat-ods-applications
+oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.4/imagestream-cpu.yaml -n redhat-ods-applications
 
 # Intel GPU
-oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.1/imagestream-intel.yaml -n redhat-ods-applications
+oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.4/imagestream-intel.yaml -n redhat-ods-applications
 
 # AMD GPU (still WIP)
-oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.1/imagestream-amd.yaml -n redhat-ods-applications
+oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.4/imagestream-amd.yaml -n redhat-ods-applications
 ```
 And then create the Workbench in your workspace using the custom image.
 
@@ -35,8 +35,10 @@ ComfyUI is a powerful and modular stable diffusion GUI and backend with a node-b
 
 Images are built and published to the GitHub Container Registry:
 
-- `ghcr.io/gpillon/comfyui-nvidia:<version>` - ComfyUI with NVIDIA CUDA support
-- `ghcr.io/gpillon/comfyui-cpu:<version>` - ComfyUI with CPU support only
+- `quay.io/rh-ee-gpillon/comfyui-odh-workbench:<version>-nvidia` - ComfyUI with NVIDIA CUDA support
+- `quay.io/rh-ee-gpillon/comfyui-odh-workbench:<version>-intel` - ComfyUI with Intel GPU support
+- `quay.io/rh-ee-gpillon/comfyui-odh-workbench:<version>-amd` - ComfyUI with AMD ROCm support
+- `quay.io/rh-ee-gpillon/comfyui-odh-workbench:<version>-cpu` - ComfyUI with CPU support only
 
 ## Usage
 
@@ -44,10 +46,10 @@ Images are built and published to the GitHub Container Registry:
 
 ```bash
 # NVIDIA GPU
-podman run -it --rm -p 8888:8888 --gpus all ghcr.io/gpillon/comfyui-nvidia:v1.0.1
+podman run -it --rm -p 8888:8888 --gpus all quay.io/rh-ee-gpillon/comfyui-odh-workbench:v1.0.4-nvidia
 
 # CPU only
-podman run -it --rm -p 8888:8888 ghcr.io/gpillon/comfyui-cpu:v1.0.1
+podman run -it --rm -p 8888:8888 quay.io/rh-ee-gpillon/comfyui-odh-workbench:v1.0.4-cpu
 ```
 
 Then access ComfyUI at http://localhost:8888
@@ -62,18 +64,17 @@ The container uses the following network configuration:
 
 - Nginx listens on port `NGINX_PORT` (Default 8888, or 8080 for ServingRuntime) and proxies requests to ComfyUI
 - ComfyUI runs on internal port 8188
-- Nginx provides OpenShift compatibility endpoints at `/api` paths
+- Nginx provides a mini API doc at `/api` paths
 - Idle culling support is implemented through the `/api/kernels` endpoint
 
 ## Use as ServingRuntime (AKA API_MODE)
 The container can be run in API-only mode by setting the `API_MODE` (ConfyUI Frontend Disabled) environment variable to `true`. This mode is optimized for use as a ServingRuntime in OpenShift AI, disabling the web UI and only exposing the API endpoints.
 
-
 ### File Cleanup (For ServingRuntime)
 
 The container includes an automatic file cleanup system that can be enabled to remove old files from the input and output directories:
 
-- Set `CLEANUP_USER_INPUT_OUTPUT=true` to enable automatic cleanup
+- Set `CLEANUP_USER_INPUT_OUTPUT=true` to enable automatic ComfyUI input and output cleanup (usually images or videos)
 - By default, files older than 60 minutes will be removed
 - Customize the retention time by setting `CLEANUP_MAX_AGE_MINUTES` to the desired value in minutes
 - Only files are deleted, directories are preserved
@@ -92,7 +93,7 @@ export CLEANUP_INTERVAL_SECONDS
 
 ### Simple Inference Endpoint (For ServingRuntime)
 
-When running as a ServiceRuntime, the container can provide a simple inference endpoint that allows direct workflow execution through HTTP requests. This feature can be enabled by setting the `ENABLE_EZ_INFER` environment variable to `true`.
+When running as a ServiceRuntime, the container can provide a simple inference endpoint that allows direct workflow execution with syncronous response through HTTP requests. This feature can be enabled by setting the `ENABLE_EZ_INFER` environment variable to `true`. Very useful for demos.
 
 
 ### Endpoint Usage
@@ -154,13 +155,13 @@ The inference endpoint supports the following environment variables:
 
 - **`ENABLE_EZ_INFER`**: Set to `true` to enable the simple inference endpoint (default: `false`)
 - **`INFERENCE_DEBUG`**: Set to `true` to enable debug logging for inference operations (default: `false`)
-- **`INFERENCE_RANDOM_SEED_NODES`**: Set to `true` to automatically randomize seed values in workflows (default: `true`)
+- **`INFERENCE_RANDOM_SEED_NODES`**: Set to `true` to automatically randomize seed values in workflows. Very useful for demos. (default: `true`) 
 
 ### ...why INFERENCE_RANDOM_SEED_NODES ... 
 
 ...and not using somethin like `cache size 0` ?
 
-When using the ezinfer endpoint, it's important to note that ComfyUI maintains an internal cache for loaded models and other expensive operations. While you may want to generate different outputs by varying the seed value, completely invalidating the cache on each request would force ComfyUI to reload models and other cached data, significantly impacting performance. This allows ComfyUI to reuse cached models and intermediate results while is forced to generate (unique) outputs through different random seeds every endpoint call.
+When using the ezinfer endpoint, it's important to note that ComfyUI maintains an internal cache for loaded models and other expensive operations. While you may want to generate different outputs by varying the seed value, completely invalidating the cache on each request would force ComfyUI to reload models and other cached data, significantly impacting performance. This setting (INFERENCE_RANDOM_SEED_NODES) allows ComfyUI to reuse cached models and intermediate results while is forced to generate (unique) outputs through different random seeds every endpoint call.
 
 ### Cache Avoidance
 
@@ -201,6 +202,8 @@ export AWS_S3_BUCKET="your-bucket-name"
 export AWS_REGION="your-region"  # Optional, defaults to empty
 ```
 
+On OpenDataHub / Openshift AI S3 variables are autoset when using a "connection"
+
 ### Optional Configuration
 
 **Exclude Folders from Upload:**
@@ -238,7 +241,7 @@ The following are automatically excluded from uploads:
 
 ### Prerequisites
 
-- Python 3.8+
+- Python 3.8+ (tested with Python 3.11 / 3.12)
 - podman or docker
 - PyYAML and Jinja2 Python packages
 
@@ -291,10 +294,11 @@ This project is licensed under the GPL-3.0 License - see the LICENSE file for de
 
 - [ComfyUI](https://github.com/comfyanonymous/ComfyUI) - The original ComfyUI project
 - [OpenDataHub](https://opendatahub.io/) - Open source end-to-end AI/ML platform on OpenShift
+- [AI on OpenShift](https://ai-on-openshift.io/)
 
 ## Dynamic ComfyUI Extensions
 
-The container now supports dynamic installation of ComfyUI extensions based on configuration in the `build-config.yaml` file. Extensions are specified in the `comfyui_packages` section:
+The container supports dynamic installation of ComfyUI extensions based on configuration in the `build-config.yaml` file. Extensions are specified in the `comfyui_packages` section:
 
 ```yaml
 comfyui_packages:
