@@ -92,8 +92,8 @@ variants:
 
 # Build settings
 build:
-  repository: "comfyui"
-  registry: "rh-ee-gpillon/comfyui-odh-workbench"
+  repository: "comfyui-odh-workbench"
+  registry: "quay.io/rh-ee-gpillon"
   comfyui_repo: "https://github.com/comfyanonymous/ComfyUI.git"
   comfyui_version: "v0.3.41"
   workdir: "/opt/app-root/src"
