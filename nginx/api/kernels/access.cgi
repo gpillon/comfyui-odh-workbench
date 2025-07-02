@@ -32,8 +32,8 @@ def get_last_activity_from_log():
     
     # Check if log file exists
     if not os.path.exists(log_file):
-        # If no log file, return current time
-        return datetime.now().isoformat() + "Z"
+        # If no log file, return empty string
+        return ""
     
     try:
         # Read the last line of the log file (most recent activity)
@@ -58,12 +58,12 @@ def get_last_activity_from_log():
             iso_timestamp = dt.isoformat() + ".000000Z"
             return iso_timestamp
         else:
-            # If can't parse timestamp, return current time
-            return datetime.now().isoformat() + "Z"
+            # If can't parse timestamp, return empty string
+            return ""
             
     except Exception:
-        # If any error reading log, return current time
-        return datetime.now().isoformat() + "Z"
+        # If any error reading log, return empty string
+        return ""
 
 def get_execution_state():
     log_file = "/tmp/log/nginx/comfyui.access.log"
