@@ -10,7 +10,7 @@ base:
 variants:
 
   - name: "cpu"
-    tag: "v1.0.4"
+    tag: "v1.0.5"
     base_image: "registry.access.redhat.com/ubi9/python-311"
     description: "ComfyUI with CPU support only"
     extra_flags: "--cpu"
@@ -30,7 +30,7 @@ variants:
       - "scripts/start-comfyui-with-nginx.sh"
 
   - name: "nvidia"
-    tag: "v1.0.4"
+    tag: "v1.0.5"
     base_image: "nvcr.io/nvidia/cuda:12.8.0-runtime-ubi9"
     cuda_version: "12.8"
     description: "ComfyUI with NVIDIA CUDA support"
@@ -50,7 +50,7 @@ variants:
       - "scripts/start-comfyui-with-nginx.sh"
 
   - name: "amd"
-    tag: "v1.0.4"
+    tag: "v1.0.5"
     base_image: "registry.access.redhat.com/ubi9/python-311"
     rocm_version: "6.3"
     description: "ComfyUI with AMD ROCM support"
@@ -70,7 +70,7 @@ variants:
       - "scripts/start-comfyui-with-nginx.sh"
 
   - name: "intel"
-    tag: "v1.0.4"
+    tag: "v1.0.5"
     base_image: "registry.access.redhat.com/ubi9/python-311"
     description: "ComfyUI with Intel support"
     recommended_accelerators: '["intel.com/gpu"]'
@@ -95,7 +95,7 @@ build:
   repository: "comfyui-odh-workbench"
   registry: "quay.io/rh-ee-gpillon"
   comfyui_repo: "https://github.com/comfyanonymous/ComfyUI.git"
-  comfyui_version: "v0.3.41"
+  comfyui_version: "v0.3.65"
   workdir: "/opt/app-root/src"
   port: 8888
   user: 1001 
@@ -103,7 +103,7 @@ build:
 # Custom ComfyUI packages to install at build time
 comfyui_packages:
   - name: "ComfyUI-Manager"
-    version: "3.33"
+    version: "3.35"
     repo: "https://github.com/ltdrdata/ComfyUI-Manager.git"
     path: "custom_nodes/ComfyUI-Manager"
     enabled: true

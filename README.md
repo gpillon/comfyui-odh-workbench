@@ -6,16 +6,16 @@ This repository contains a dynamic builder for ComfyUI images optimized for [Ope
 
 ```bash
 # Nvidia GPU
-oc apply -f https://github.com/gpillon/comfyui-odh-workbench/releases/download/v1.0.4/imagestream-nvidia.yaml -n redhat-ods-applications
+oc apply -f https://github.com/gpillon/comfyui-odh-workbench/releases/download/v1.0.5/imagestream-nvidia.yaml -n redhat-ods-applications
 
 # CPU Only (recommended for testing purposes only)
-oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.4/imagestream-cpu.yaml -n redhat-ods-applications
+oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.5/imagestream-cpu.yaml -n redhat-ods-applications
 
 # Intel GPU
-oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.4/imagestream-intel.yaml -n redhat-ods-applications
+oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.5/imagestream-intel.yaml -n redhat-ods-applications
 
 # AMD GPU (still WIP)
-oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.4/imagestream-amd.yaml -n redhat-ods-applications
+oc apply -f https://github.com/gpillon/comfyui-odh-notebook/releases/download/v1.0.5/imagestream-amd.yaml -n redhat-ods-applications
 ```
 And then create the Workbench in your workspace using the custom image.
 
@@ -46,10 +46,10 @@ Images are built and published to the GitHub Container Registry:
 
 ```bash
 # NVIDIA GPU
-podman run -it --rm -p 8888:8888 --gpus all quay.io/rh-ee-gpillon/comfyui-odh-workbench:v1.0.4-nvidia
+podman run -it --rm -p 8888:8888 --gpus all quay.io/rh-ee-gpillon/comfyui-odh-workbench:v1.0.5-nvidia
 
 # CPU only
-podman run -it --rm -p 8888:8888 quay.io/rh-ee-gpillon/comfyui-odh-workbench:v1.0.4-cpu
+podman run -it --rm -p 8888:8888 quay.io/rh-ee-gpillon/comfyui-odh-workbench:v1.0.5-cpu
 ```
 
 Then access ComfyUI at http://localhost:8888
